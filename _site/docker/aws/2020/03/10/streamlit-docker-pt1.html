@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Deploying web apps with Streamlit, Docker, and AWS - part 1 | Collin Prather’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Deploying web apps with Streamlit, Docker, and AWS - part 1" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Need to update description" />
+<meta property="og:description" content="Need to update description" />
+<link rel="canonical" href="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html" />
+<meta property="og:url" content="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html" />
+<meta property="og:site_name" content="Collin Prather’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-03-10T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Need to update description","headline":"Deploying web apps with Streamlit, Docker, and AWS - part 1","@type":"BlogPosting","dateModified":"2020-03-10T00:00:00-05:00","datePublished":"2020-03-10T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html"},"url":"https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://collinprather.github.io/blog/feed.xml" title="Collin Prather's blog" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Deploying web apps with Streamlit, Docker, and AWS - part 1 | Collin Prather’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Deploying web apps with Streamlit, Docker, and AWS - part 1" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Need to update description" />
+<meta property="og:description" content="Need to update description" />
+<link rel="canonical" href="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html" />
+<meta property="og:url" content="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html" />
+<meta property="og:site_name" content="Collin Prather’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-03-10T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Need to update description","headline":"Deploying web apps with Streamlit, Docker, and AWS - part 1","@type":"BlogPosting","dateModified":"2020-03-10T00:00:00-05:00","datePublished":"2020-03-10T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html"},"url":"https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css"><link type="application/atom+xml" rel="alternate" href="https://collinprather.github.io/blog/feed.xml" title="Collin Prather's blog" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    // remove paragraph tags in rendered toc (happens from notebooks)
+    var toctags = document.querySelectorAll(".toc-entry")
+    toctags.forEach(e => (e.firstElementChild.innerText = e.firstElementChild.innerText.replace('¶', '')))
+    });
+</script>
+</head><body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Collin Prather&#39;s blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/about/">About Me</a><a class="page-link" href="/blog/search/">Search</a><a class="page-link" href="/blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Deploying web apps with Streamlit, Docker, and AWS - part 1</h1><p class="page-description">Need to update description</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-03-10T00:00:00-05:00" itemprop="datePublished">
+        Mar 10, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      5 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/blog/categories/#docker">docker</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/blog/categories/#AWS">AWS</a>
+        
+      
+      </p>
+    
+
+    </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#containerizing-a-streamlit-web-app-with-docker">Containerizing a Streamlit web app with Docker</a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#the-dockerfile">The Dockerfile</a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#ubuntu-commands">Ubuntu commands</a></li>
+<li class="toc-entry toc-h3"><a href="#setting-up-the-app">Setting up the app</a></li>
+<li class="toc-entry toc-h3"><a href="#streamlit-specific-commands">Streamlit-specific commands</a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#building-the-docker-image-and-running-the-container">Building the docker image and running the container</a></li>
+</ul>
+</li>
+</ul><h1 id="containerizing-a-streamlit-web-app-with-docker">
+<a class="anchor" href="#containerizing-a-streamlit-web-app-with-docker" aria-hidden="true"><span class="octicon octicon-link"></span></a>Containerizing a <a href="https://www.streamlit.io/">Streamlit</a> web app with <a href="https://www.docker.com/">Docker</a>
+</h1>
+
+<p>In this tutorial, we will be assuming that you already have a streamlit app ready to deploy. 
+If you don’t, no worries! The <a href="https://docs.streamlit.io/">streamlit docs</a> have some great <a href="https://docs.streamlit.io/tutorial/index.html">tutorials</a>,
+but if you’d rather jump right in, you can go ahead and <code class="highlighter-rouge">git clone</code> my small example <a href="https://github.com/collinprather/streamlit-docker">here</a>.</p>
+
+<p>So let’s say that you’ve got your streamlit web app prepared in a directory that looks as follows:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>├── app.py                 # streamlit code
+├── content.py             # textual content - imported into app
+├── images                 # various images for your app
+│   ├── logo.png
+│   ├── background.png
+├── requirements.txt       # libraries used by your app
+</code></pre></div></div>
+
+<p>In order to <em>containerize</em> this application with Docker, the first step will be to add a <code class="highlighter-rouge">Dockerfile</code>
+to the root of your directory. Your <code class="highlighter-rouge">Dockerfile</code> acts as a set of instructions (more specifically,
+a set of commands that could equivalently be called from the command line) from which Docker will
+build an image for your app. Using this image, Docker will then create a container. If this is all new,
+I’d recommend taking a look at this <a href="https://docs.docker.com/engine/docker-overview/">Docker overview</a>!</p>
+
+<h2 id="the-dockerfile">
+<a class="anchor" href="#the-dockerfile" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Dockerfile</h2>
+
+<p>The <code class="highlighter-rouge">Dockerfile</code> for my <a href="https://github.com/collinprather/streamlit-docker">small example</a> looks like this:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># base image</span>
+<span class="c"># a little overkill but need it to install dot cli for dtreeviz</span>
+FROM ubuntu:18.04
+
+<span class="c"># ubuntu installing - python, pip, graphviz</span>
+RUN apt-get update <span class="o">&amp;&amp;</span><span class="se">\</span>
+    apt-get <span class="nb">install </span>python3.7 <span class="nt">-y</span> <span class="o">&amp;&amp;</span><span class="se">\</span>
+    apt-get <span class="nb">install </span>python3-pip <span class="nt">-y</span> <span class="o">&amp;&amp;</span><span class="se">\</span>
+    apt-get <span class="nb">install </span>graphviz <span class="nt">-y</span>
+
+<span class="c"># exposing default port for streamlit</span>
+EXPOSE 8501
+
+<span class="c"># making directory of app</span>
+WORKDIR /streamlit-docker
+
+<span class="c"># copy over requirements</span>
+COPY requirements.txt ./requirements.txt
+
+<span class="c"># install pip then packages</span>
+RUN pip3 <span class="nb">install</span> <span class="nt">-r</span> requirements.txt
+
+<span class="c"># copying all files over</span>
+COPY <span class="nb">.</span> <span class="nb">.</span>
+
+<span class="c"># cmd to launch app when container is run</span>
+CMD streamlit run app.py
+
+<span class="c"># streamlit-specific commands for config</span>
+ENV <span class="nv">LC_ALL</span><span class="o">=</span>C.UTF-8
+ENV <span class="nv">LANG</span><span class="o">=</span>C.UTF-8
+RUN <span class="nb">mkdir</span> <span class="nt">-p</span> /root/.streamlit
+RUN bash <span class="nt">-c</span> <span class="s1">'echo -e "\
+[general]\n\
+email = \"\"\n\
+" &gt; /root/.streamlit/credentials.toml'</span>
+
+RUN bash <span class="nt">-c</span> <span class="s1">'echo -e "\
+[server]\n\
+enableCORS = false\n\
+" &gt; /root/.streamlit/config.toml'</span>
+</code></pre></div></div>
+
+<div class="Toast Toast--warning googoo">
+   <span class="Toast-icon"><svg class="octicon octicon-alert" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>
+   <span class="Toast-content">The `ubuntu` portions are a bit overkill!</span>
+</div>
+
+<p>It is worth mentioning that the <code class="highlighter-rouge">ubuntu</code> portions of this <code class="highlighter-rouge">Dockerfile</code> are a little bit overkill
+for the scale of this small web app, however, I found them necessary to get a nice rendering of 
+an svg file generated by the <code class="highlighter-rouge">dtreeviz</code> package. This is also a great example of a simpler <code class="highlighter-rouge">Dockerfile</code>
+on <a href="%22https://maelfabien.github.io/project/Streamlit/#">this blog</a>. There is a lot to unpack here, so I’ll do so line by line.</p>
+
+<h3 id="ubuntu-commands">
+<a class="anchor" href="#ubuntu-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ubuntu commands</h3>
+
+<p>At the top, we build off the base <code class="highlighter-rouge">ubuntu</code> image with the following line:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FROM ubuntu:18.04
+</code></pre></div></div>
+
+<p>This means that docker pulls the <a href="https://hub.docker.com/_/ubuntu"><code class="highlighter-rouge">ubuntu:18.04</code></a> image from dockerhub to begin with.</p>
+
+<p>Next, we update and install a few things we’ll need for our web app.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>RUN apt-get update <span class="o">&amp;&amp;</span><span class="se">\</span>
+    apt-get <span class="nb">install </span>python3.7 <span class="nt">-y</span> <span class="o">&amp;&amp;</span><span class="se">\</span>
+    apt-get <span class="nb">install </span>python3-pip <span class="nt">-y</span> <span class="o">&amp;&amp;</span><span class="se">\</span>
+    apt-get <span class="nb">install </span>graphviz <span class="nt">-y</span>
+</code></pre></div></div>
+
+<h3 id="setting-up-the-app">
+<a class="anchor" href="#setting-up-the-app" aria-hidden="true"><span class="octicon octicon-link"></span></a>Setting up the app</h3>
+
+<p>After that, we set up our actual application within the image. Since streamlit’s default port is <code class="highlighter-rouge">8501</code>, we open up that port in the image.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EXPOSE 8501
+</code></pre></div></div>
+
+<p>From there, we (optionally) define a working directory within the image and copy over all of our files, then install the necessary python libraries (as defined in our <code class="highlighter-rouge">requirements.txt</code>)</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>WORKDIR /streamlit-docker
+COPY requirements.txt ./requirements.txt
+RUN pip3 <span class="nb">install</span> <span class="nt">-r</span> requirements.txt
+COPY <span class="nb">.</span> <span class="nb">.</span>
+</code></pre></div></div>
+
+<div class="Toast">
+   <span class="Toast-icon"><svg class="octicon octicon-info" viewbox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 01-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 01-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>
+   <span class="Toast-content">It is typically not recommended to copy all files the the images the way we've done above (particularly is you have large files. Since this is a small example, it won't cause any issues for us.</span>
+</div>
+
+<h3 id="streamlit-specific-commands">
+<a class="anchor" href="#streamlit-specific-commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Streamlit-specific commands</h3>
+
+<p>Finally, we must include a few commands to ensure that streamlist runs as expected. We define a command to launch our web app whenever our docker container gets launched,</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CMD streamlit run app.py
+</code></pre></div></div>
+
+<p>and we finish by including a few commands to configure streamlit correctly.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ENV <span class="nv">LC_ALL</span><span class="o">=</span>C.UTF-8
+ENV <span class="nv">LANG</span><span class="o">=</span>C.UTF-8
+RUN <span class="nb">mkdir</span> <span class="nt">-p</span> /root/.streamlit
+RUN bash <span class="nt">-c</span> <span class="s1">'echo -e "\
+[general]\n\
+email = \"\"\n\
+" &gt; /root/.streamlit/credentials.toml'</span>
+RUN bash <span class="nt">-c</span> <span class="s1">'echo -e "\
+[server]\n\
+enableCORS = false\n\
+" &gt; /root/.streamlit/config.toml'</span>
+</code></pre></div></div>
+
+<h2 id="building-the-docker-image-and-running-the-container">
+<a class="anchor" href="#building-the-docker-image-and-running-the-container" aria-hidden="true"><span class="octicon octicon-link"></span></a>Building the docker image and running the container</h2>
+
+<p>Now that we have our web app and our <code class="highlighter-rouge">Dockerfile</code> all set up, we’re ready to build the image. We can do so with a single command.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker image build <span class="nt">-t</span> streamlit:app <span class="nb">.</span>
+</code></pre></div></div>
+<div class="Toast">
+   <span class="Toast-icon"><svg class="octicon octicon-info octicon octicon-info" viewbox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 01-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 01-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>
+   <span class="Toast-content">Note: you must run this command from the same directory as your Dockerfile</span>
+</div>
+
+<p>where <code class="highlighter-rouge">-t</code> stands for “tag” and <code class="highlighter-rouge">.</code> references the directory with the Dockerfile. When you run from the command line, you will see Docker moving through each step and installing lots of packages to the image. Once it is finished (make take a few minutes the first time), you should see a verification like <code class="highlighter-rouge">Successfully tagged streamlit:app</code>, letting you know that the Docker image was successfully created. You can further verify that the image was created correctly by running <code class="highlighter-rouge">docker image ls</code>, where you should see something like</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker image <span class="nb">ls
+</span>REPOSITORY                           TAG                 IMAGE ID            CREATED             SIZE
+streamlit                            app                 ecda3493de33        50 seconds ago      1.52GB
+</code></pre></div></div>
+
+<p>At this point, our image has been successfully built and we are ready to run the it, by way of container! (If the differences between an image and container are confusing, <a href="https://nickjanetakis.com/blog/differences-between-a-dockerfile-docker-image-and-docker-container">this short post</a> provides some helpful distinctions.) One command will do the trick,</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker container run <span class="nt">-p</span> 8501:8501 <span class="nt">-d</span> streamlit:app
+</code></pre></div></div>
+
+<p>where <code class="highlighter-rouge">-p</code> allows you to <em>publish</em> a container’s port to the host’s port and <code class="highlighter-rouge">-d</code> allows you to run it in the background. You can then verify that is is running with a command like this,</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+82ecab4abfb1        streamlit:app       <span class="s2">"/bin/sh -c 'streaml…"</span>   22 seconds ago      Up 21 seconds       0.0.0.0:8501-&gt;8501/tcp   weird_name
+</code></pre></div></div>
+
+<p>Better yet, pop open a web browser and you can view your web app, running in a docker container, at <code class="highlighter-rouge">http://localhost:8501/</code>. If you’re using my example, it should look something like this!</p>
+
+<p><img src="../../../../../images/2020-03-10-streamlit-docker-pt1/streamlit-example.png" alt=""></p>
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="collinprather/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p></p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/collinprather" title="collinprather"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://www.linkedin.com/in/collin-prather" title="collin-prather"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#linkedin"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
