@@ -136,13 +136,13 @@ window.onload = wrap_img;
 <li class="toc-entry toc-h2"><a href="#getting-your-web-app-in-the-cloud">Getting your web app in the cloud</a></li>
 </ul>
 </li>
-</ul><p>This is part 2 of 3. Make sure to read through <a href="https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html">part 1</a> first!</p>
+</ul><p>This is part 2 of a 3-part series. Make sure to read through <a href="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html">part 1</a> first, then <a href="https://collinprather.github.io/blog/docker/aws/2020/03/12/streamlit-docker-pt3.html">part 3</a> next!</p>
 
 <h1 id="deploying-your-web-app-to-the-cloud-with-aws">
 <a class="anchor" href="#deploying-your-web-app-to-the-cloud-with-aws" aria-hidden="true"><span class="octicon octicon-link"></span></a>Deploying your web app to the cloud with <a href="https://aws.amazon.com/console/">AWS</a>
 </h1>
 
-<p>Now, we will walk through how to deploy your web app to the cloud and make it publicly available! Just like in part 1, these instructions are tailored to <a href="https://github.com/collinprather/streamlit-docker">my small example</a>, but should generalize to any streamlit app you’ve built!</p>
+<p>Now, we will walk through how to deploy your web app to the cloud and make it publicly available! Just like in part 1, these instructions are tailored to <a href="https://github.com/collinprather/streamlit-docker">my small example</a>, but should generalize to any streamlit app you’ve built.</p>
 
 <h2 id="ec2-set-up">
 <a class="anchor" href="#ec2-set-up" aria-hidden="true"><span class="octicon octicon-link"></span></a>EC2 set-up</h2>
@@ -153,9 +153,9 @@ window.onload = wrap_img;
 
 <p>Next, you’ll want to use the tab on the left hand-side of the console to select <code class="highlighter-rouge">Instances -&gt; Launch Instance</code>.</p>
 
-<p>include picture of choosing launch instance!</p>
+<p><img src="../../../../../images/2020-03-11-streamlit-docker-pt2/launch.png" alt=""></p>
 
-<p>This will lead you to a screen prompting you to “Choose you an Amazon Machine Image”. There are many options to choose from here, but our life will be made simplest by choosing the <code class="highlighter-rouge">Deep Learning AMI (Ubuntu 16.04)</code> AMI. Using this image does introduce a bit of unneccessary overhead, however, it gurantees us that git and Docker will be pre-installed, so it will be our choice.</p>
+<p>This will lead you to a screen prompting you to “Choose you an Amazon Machine Image”. There are many options to choose from here, but our life will be made simplest by choosing the <code class="highlighter-rouge">Deep Learning AMI (Ubuntu)</code> AMI. Using this image does introduce a bit of unneccessary overhead, however, it gurantees us that git and Docker will be pre-installed, so it will be our choice.</p>
 
 <p><img src="../../../../../images/2020-03-11-streamlit-docker-pt2/ami.png" alt=""></p>
 
@@ -165,23 +165,23 @@ window.onload = wrap_img;
 
 <div class="Toast Toast--warning googoo">
    <span class="Toast-icon"><svg class="octicon octicon-alert octicon octicon-alert" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>
-   <span class="Toast-content">Your AWS account will be charged when you launch this instance. The good news is that you'll only be charged about $0.0464 per hour. Don't forget to terminate your instance when finished!</span>
+   <span class="Toast-content">Your AWS account will be charged when you launch this instance. The good news is that you'll only be charged about $0.0464 per hour (as of 3/11/20). Don't forget to terminate your instance when finished!</span>
 </div>
 
 <p>From here, you can skip all the way to step 6 in launching the instance, which is where you’ll “Configure Security Group”. By default, all ports on our <code class="highlighter-rouge">EC2</code> instance, other than <code class="highlighter-rouge">22</code>, are closed to the public. In order to make our streamlit app publicly available, we need to open up port <code class="highlighter-rouge">8501</code>. We can do so by creating a custom tcp rule, as pictured below.</p>
 
 <p><img src="../../../../../images/2020-03-11-streamlit-docker-pt2/tcp.png" alt=""></p>
 
-<p>With that set, you can click “launch”.</p>
+<p>With that set, you can click <code class="highlighter-rouge">launch</code>.</p>
 
-<p>Lastly, we will need to <code class="highlighter-rouge">ssh</code> into the instance to get the code to run our app in the cloud. This requires a key pair. You should be prompted to choose an existing key pair or create one. If you do not have an existing one, choose “Create a new key pair”, then download it!</p>
+<p>Lastly, we will need to <code class="highlighter-rouge">ssh</code> into the instance to get the code to run our app in the cloud. This requires a key pair. You should be prompted to choose an existing key pair or create one. If you do not have an existing one, choose “Create a new key pair”, then download it. Now you’re ready to click <code class="highlighter-rouge">Launch Instances</code>.</p>
 
 <p><img src="../../../../../images/2020-03-11-streamlit-docker-pt2/key_pair.png" alt=""></p>
 
 <h2 id="getting-your-web-app-in-the-cloud">
 <a class="anchor" href="#getting-your-web-app-in-the-cloud" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting your web app in the cloud</h2>
 
-<p>At this point, your <code class="highlighter-rouge">EC2</code> instance is being built and configured. You can follow its progress back in the AWS console. Once you see a green “running” icon next to your instance, you are able to toggle it, then click the “Connect” button near the top of the console. Follow AWS’s instructions (shown below) to <code class="highlighter-rouge">ssh</code> into the instance from your local terminal.</p>
+<p>At this point, your <code class="highlighter-rouge">EC2</code> instance is being built and configured. You can follow its progress back in the AWS console. Once you see a green “running” icon next to your instance, you are able to toggle it, then click the <code class="highlighter-rouge">Connect</code> button near the top of the console. Follow AWS’s instructions (shown below) to <code class="highlighter-rouge">ssh</code> into the instance from your local terminal.</p>
 
 <p><img src="../../../../../images/2020-03-11-streamlit-docker-pt2/connect.png" alt=""></p>
 
@@ -190,11 +190,11 @@ window.onload = wrap_img;
 <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ubuntu@ip-172-31-10-244:~<span class="nv">$ </span>git clone https://github.com/collinprather/streamlit-docker.git
 </code></pre></div></div>
 
-<p>Now that our code is on the instance, we can use the 2 commands featured in <a href="https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html">part 1</a> to build, then run the image.</p>
+<p>Now that our code is on the instance, we can use the 2 commands featured in <a href="https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html">part 1</a> to build, then run the image (output removed for brevity).</p>
 
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">cd </span>streamlit-docker/
-<span class="nv">$ </span>docker image build <span class="nt">-t</span> streamlit:app <span class="nb">.</span>
-<span class="nv">$ </span>docker container run <span class="nt">-p</span> 8501:8501 <span class="nt">-d</span> streamlit:app
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ubuntu@ip-172-31-10-244:~<span class="nv">$ </span><span class="nb">cd </span>streamlit-docker/
+ubuntu@ip-172-31-10-244:~/streamlit-docker<span class="nv">$ </span>docker image build <span class="nt">-t</span> streamlit:app <span class="nb">.</span>
+ubuntu@ip-172-31-10-244:~/streamlit-docker<span class="nv">$ </span>docker container run <span class="nt">-p</span> 8501:8501 <span class="nt">-d</span> streamlit:app
 </code></pre></div></div>
 
 <p>Now, the web app will be served at <code class="highlighter-rouge">&lt;EC2 public IP address&gt;:8501</code>! The public IP address can be found under “IPv4 Public IP” in the AWS console. Once you’ve located it, pull open a web browser and verify that your app is running as expected!</p>
