@@ -11,7 +11,7 @@ categories: [docker, AWS]
 
 This is part 3 of 3-part series. Make sure to read through [part 1](https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html) and [part 2](https://collinprather.github.io/blog//docker/aws/2020/03/11/streamlit-docker-pt2.html) before you continue!
 
-In parts 1 and 2, we covered how to build a docker image for a streamlit web app and how to move your code into the cloud. In this post, we will walk through how to connect other containerized services to your app. Specifically, we'll connect to a Postgres database, but this process should hold for any other service you'd like to employ.
+In parts 1 and 2, we covered how to build a Docker image for a Streamlit web app and how to move your code into the cloud. In this post, we will walk through how to connect other containerized services to your app. Specifically, we'll connect to a Postgres database, but this process should hold for any other service you'd like to employ.
 
 # New features require new tools
 
@@ -36,7 +36,7 @@ The easiest way to add this feature to our web app would just be to save the dat
 
 Docker has a fantastic tool called "docker-compose", which allows you to easily chain together containers, and takes care of many details under the hood so that things just work. This is the perfect tool for our use-case. Below, we'll walk through how to use it!
 
-All the code used to add the database to our app can be found on [the `docker-compose+postgres`](https://github.com/collinprather/streamlit-docker/tree/docker-compose%2Bpostgres) branch of the repository. The beauty of Docker is that we do not have to make any structural changes to our app. All we have to do is add a bit of functionality to interact with the database.
+All the code used to add the database to our app can be found on [the `docker-compose+postgres` branch](https://github.com/collinprather/streamlit-docker/tree/docker-compose%2Bpostgres) of the repository. The beauty of Docker is that we do not have to make any structural changes to our app in order to interact with the database, only add a bit of functionality.
 
 The first step in adding the database is creating a `docker-compose.yml` file in the root of our repository. Mine looks like this,
 
@@ -91,13 +91,13 @@ The majority of our legwork falls under `services`, which is where we'll define 
       - .env
 ```
 
-Here, we let Docker know that we want to use the `postgres:12` image from DockerHub and refer to it as `postgres`. Since `5432` is the default port for postgres, we make sure to map that to the container's outgoing `5432` port, so that it will be accessible by app. Next, we mount our postgres database (`db_data`) to the location within the container that postgres stores all of its data ([this blog](https://linuxhint.com/run_postgresql_docker_compose/) explains why this is the preferred method to gurantee our data is persisted). Lastly, we point the database towards a `.env` file which contains the username, password, and default name of our database. This file enables us to programmatically query the database without leaving our password in the source code!
+Here, we let Docker know that we want to use the `postgres:12` image from DockerHub and refer to it as `postgres`. Since `5432` is the default port for postgres, we make sure to map that to the container's outgoing `5432` port, so that it will be accessible by the app. Next, we mount our postgres database (`db_data`) to the location within the container that postgres stores all of its data, `/var/lib/postgresql/data` ([this blog](https://linuxhint.com/run_postgresql_docker_compose/) explains why this is the preferred method to gurantee our data is persisted). Lastly, we point the database towards a `.env` file which contains the username, password, and default name of our database. This file enables us to programmatically query the database without leaving our password in the source code!
 
 {% include alert.html text="The environment file should never be pushed to Github!" %}
 
 ### Persisting our data
 
-All Docker images are designed to be *ephemeral*, easily replaceable blocks that we can place together like legos. On the other hand, we want our data to *persist* even as our images change. As [Ranvir Singh said](https://linuxhint.com/run_postgresql_docker_compose/),
+All Docker containers are designed to be *ephemeral*, easily replaceable blocks that we can place together like legos. On the other hand, we want our data to *persist* even as our containers change. As [Ranvir Singh said](https://linuxhint.com/run_postgresql_docker_compose/),
 
 > One of the most challenging tasks ... is separating data from software.
 
@@ -121,7 +121,7 @@ With our database aligned, we can add our existing streamlit app to the `docker-
       - "8501:8501"
 ```
 
-All the action commences with `context: .`, which indicates to Docker that the `streamlit` image should be built by a `Dockerfile` residing in the same directory as the `docker-compose.yml`. Other than that, we open up streamlit's default `8501` port, just as we did in [part 1](https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html).
+All the action commences with `context: .`, which indicates to Docker that the building of our `streamlit` image should be governed by a `Dockerfile` residing in the same directory as the `docker-compose.yml`. Other than that, we open up streamlit's default `8501` port, just as we did in [part 1](https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html).
 
 Most commonly, you will already have a Postgres instance storing your data. Since our app uses data retrieved via api, there is one extra step we must take to get this data into the database. This can be handled by making use of a script that retrieves the data, then loads it into the database each time the app's image is built. To do so, we must add the following line to our `Dockerfile`.
 

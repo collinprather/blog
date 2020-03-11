@@ -13,7 +13,7 @@ This is part 2 of a 3-part series. Make sure to read through [part 1](https://co
 
 # Deploying your web app to the cloud with [AWS](https://aws.amazon.com/console/)
 
-Now, we will walk through how to deploy your web app to the cloud and make it publicly available! Just like in part 1, these instructions are tailored to [my small example](https://github.com/collinprather/streamlit-docker), but should generalize to any streamlit app you've built.
+Now, we will walk through how to deploy your web app to the cloud and make it publicly available! Just like in [part 1](https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html), these instructions are tailored to [my small example](https://github.com/collinprather/streamlit-docker), but should generalize to any streamlit app you've built.
 
 ## EC2 set-up
 

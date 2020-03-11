@@ -11,11 +11,14 @@ categories: [docker, AWS]
 
 This is part 1 of a 3 part series. Make sure to read through [part 2](https://collinprather.github.io/blog/docker/aws/2020/03/11/streamlit-docker-pt2.html) and [part 3](https://collinprather.github.io/blog/docker/aws/2020/03/12/streamlit-docker-pt3.html) next!
 
-# Containerizing a [Streamlit](https://www.streamlit.io/) web app with [Docker](https://www.docker.com/)
-
- In this tutorial, we will be assuming that you already have a streamlit app ready to deploy. 
-If you don't, no worries! The [streamlit docs](https://docs.streamlit.io/) have some great [tutorials](https://docs.streamlit.io/tutorial/index.html),
+ In this tutorial, we will be assuming the following:
+ * You have a working Streamlit app ready to deploy
+    - If you don't, no worries! The [streamlit docs](https://docs.streamlit.io/) have some great [tutorials](https://docs.streamlit.io/tutorial/index.html),
 but if you'd rather jump right in, you can go ahead and `git clone` my small example [here](https://github.com/collinprather/streamlit-docker).
+ * You have Docker installed
+ * You have a working knowledge of the command line
+
+# Containerizing a [Streamlit](https://www.streamlit.io/) web app with [Docker](https://www.docker.com/)
  
  So let's say that you've got your streamlit web app prepared in a directory that looks as follows:
  
@@ -97,7 +100,7 @@ At the top, we build off the base `ubuntu` image with the following line:
 FROM ubuntu:18.04
 ```
 
-This means that docker pulls the [`ubuntu:18.04`](https://hub.docker.com/_/ubuntu) image from dockerhub to begin with.
+This means that Docker pulls the [`ubuntu:18.04`](https://hub.docker.com/_/ubuntu) image from DockerHub to begin with.
 
 Next, we update and install a few things we'll need for our web app.
 
@@ -110,7 +113,7 @@ RUN apt-get update &&\
 
 ### Setting up the app
 
-After that, we set up our actual application within the image. Since streamlit's default port is `8501`, we open up that port.
+After that, we set up our app within the image. Since streamlit's default port is `8501`, we open up that port.
 
 ```shell
 EXPOSE 8501
@@ -173,7 +176,7 @@ streamlit                            app                 ecda3493de33        50 
 At this point, our image has been successfully built and we are ready to run it by way of container! (If the differences between an image and container are confusing, [this short post](https://nickjanetakis.com/blog/differences-between-a-dockerfile-docker-image-and-docker-container) provides some helpful distinctions). One command will do the trick,
 
 ```shell
-docker container run -p 8501:8501 -d streamlit:app
+$ docker container run -p 8501:8501 -d streamlit:app
 ```
 
 where `-p` allows you to *publish* a container's port to the host's port and `-d` allows you to run it in the background. You can then verify that is is running with a command like this,
