@@ -5,7 +5,7 @@ comments: true
 layout: post
 hide: false
 search_exclude: false
-description: "How to launch an AWS EC2 instance."
+description: "Moving a web app into the cloud."
 categories: [docker, AWS]
 ---
 
