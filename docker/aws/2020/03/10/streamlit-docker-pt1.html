@@ -17,7 +17,16 @@
 <script type="application/ld+json">
 {"description":"How to build a Dockerfile suited for a Streamlit web app.","headline":"Deploying web apps with Streamlit, Docker, and AWS - part 1","@type":"BlogPosting","dateModified":"2020-03-10T00:00:00-05:00","datePublished":"2020-03-10T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html"},"url":"https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://collinprather.github.io/blog/feed.xml" title="Collin Prather's blog" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://collinprather.github.io/blog/feed.xml" title="Collin Prather's blog" /><script async src="https://www.googletagmanager.com/gtag/js?id=UA-160320539-1"></script>
+<script>
+  window['ga-disable-UA-160320539-1'] = window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1";
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-160320539-1');
+</script>
+<link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><!-- Begin Jekyll SEO tag v2.6.1 -->
 <title>Deploying web apps with Streamlit, Docker, and AWS - part 1 | Collin Prather’s blog</title>
 <meta name="generator" content="Jekyll v4.0.0" />
 <meta property="og:title" content="Deploying web apps with Streamlit, Docker, and AWS - part 1" />
@@ -34,7 +43,16 @@
 <!-- End Jekyll SEO tag -->
 
 <link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
-<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css"><link type="application/atom+xml" rel="alternate" href="https://collinprather.github.io/blog/feed.xml" title="Collin Prather's blog" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css"><link type="application/atom+xml" rel="alternate" href="https://collinprather.github.io/blog/feed.xml" title="Collin Prather's blog" /><script async src="https://www.googletagmanager.com/gtag/js?id=UA-160320539-1"></script>
+<script>
+  window['ga-disable-UA-160320539-1'] = window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1";
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-160320539-1');
+</script>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
     <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
@@ -142,7 +160,7 @@ window.onload = wrap_img;
 <li class="toc-entry toc-h2"><a href="#building-the-docker-image-and-running-the-container">Building the docker image and running the container</a></li>
 </ul>
 </li>
-</ul><p>This is part 1 of a 3 part series. Make sure to read through <a href="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html">part 2</a> and <a href="https://collinprather.github.io/blog/docker/aws/2020/03/12/streamlit-docker-pt3.html">part 3</a> next!</p>
+</ul><p>This is part 1 of a 3 part series. Make sure to read through <a href="https://collinprather.github.io/blog/docker/aws/2020/03/11/streamlit-docker-pt2.html">part 2</a> and <a href="https://collinprather.github.io/blog/docker/aws/2020/03/12/streamlit-docker-pt3.html">part 3</a> next!</p>
 
 <h1 id="containerizing-a-streamlit-web-app-with-docker">
 <a class="anchor" href="#containerizing-a-streamlit-web-app-with-docker" aria-hidden="true"><span class="octicon octicon-link"></span></a>Containerizing a <a href="https://www.streamlit.io/">Streamlit</a> web app with <a href="https://www.docker.com/">Docker</a>
