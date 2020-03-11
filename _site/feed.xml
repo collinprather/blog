@@ -1,46 +1,66 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="https://collinprather.github.io/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="https://collinprather.github.io/blog/" rel="alternate" type="text/html" /><updated>2020-03-10T16:35:56-05:00</updated><id>https://collinprather.github.io/blog/feed.xml</id><title type="html">Collin Prather’s blog</title><entry><title type="html">Deploying web apps with Streamlit, Docker, and AWS - part 2</title><link href="https://collinprather.github.io/blog/docker/aws/2020/03/11/streamlit-docker-pt2.html" rel="alternate" type="text/html" title="Deploying web apps with Streamlit, Docker, and AWS - part 2" /><published>2020-03-11T00:00:00-05:00</published><updated>2020-03-11T00:00:00-05:00</updated><id>https://collinprather.github.io/blog/docker/aws/2020/03/11/streamlit-docker-pt2</id><content type="html" xml:base="https://collinprather.github.io/blog/docker/aws/2020/03/11/streamlit-docker-pt2.html">&lt;p&gt;Link to part 1 here!&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="https://collinprather.github.io/blog/feed.xml" rel="self" type="application/atom+xml" /><link href="https://collinprather.github.io/blog/" rel="alternate" type="text/html" /><updated>2020-03-10T19:00:21-05:00</updated><id>https://collinprather.github.io/blog/feed.xml</id><title type="html">Collin Prather’s blog</title><entry><title type="html">Deploying web apps with Streamlit, Docker, and AWS - part 2</title><link href="https://collinprather.github.io/blog/docker/aws/2020/03/11/streamlit-docker-pt2.html" rel="alternate" type="text/html" title="Deploying web apps with Streamlit, Docker, and AWS - part 2" /><published>2020-03-11T00:00:00-05:00</published><updated>2020-03-11T00:00:00-05:00</updated><id>https://collinprather.github.io/blog/docker/aws/2020/03/11/streamlit-docker-pt2</id><content type="html" xml:base="https://collinprather.github.io/blog/docker/aws/2020/03/11/streamlit-docker-pt2.html">&lt;p&gt;This is part 2 of 3. Make sure to read through &lt;a href=&quot;https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html&quot;&gt;part 1&lt;/a&gt; first!&lt;/p&gt;
 
 &lt;h1 id=&quot;deploying-your-web-app-to-the-cloud-with-aws&quot;&gt;Deploying your web app to the cloud with &lt;a href=&quot;https://aws.amazon.com/console/&quot;&gt;AWS&lt;/a&gt;&lt;/h1&gt;
 
-&lt;p&gt;Now, we will walk through how to deploy your web app to the cloud and make it publicly available!&lt;/p&gt;
+&lt;p&gt;Now, we will walk through how to deploy your web app to the cloud and make it publicly available! Just like in part 1, these instructions are tailored to &lt;a href=&quot;https://github.com/collinprather/streamlit-docker&quot;&gt;my small example&lt;/a&gt;, but should generalize to any streamlit app you’ve built!&lt;/p&gt;
 
-&lt;h2 id=&quot;ec2-set-up&quot;&gt;EC2 Set up&lt;/h2&gt;
+&lt;h2 id=&quot;ec2-set-up&quot;&gt;EC2 set-up&lt;/h2&gt;
 
 &lt;p&gt;We’ll start by heading over to &lt;a href=&quot;aws.amazon.com/console&quot;&gt;aws.amazon.com/console&lt;/a&gt;. If you do not yet have an account, create one! After you’re logged in, locate the &lt;code class=&quot;highlighter-rouge&quot;&gt;Services&lt;/code&gt; tab in the upper left-hand corner, then select &lt;code class=&quot;highlighter-rouge&quot;&gt;EC2&lt;/code&gt;.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;../../../../../images/2020-03-11-streamlit-docker-pt2/ec2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Next, you’ll want to use the tab on the left hand-side of the console to hit &lt;code class=&quot;highlighter-rouge&quot;&gt;Instances -&amp;gt; Launch Instance&lt;/code&gt;. This will lead you to a screen prompting you to “Choose you an Amazon Machine Image”. There are many options to choose from here, but our life will be made simplest by choosing the &lt;code class=&quot;highlighter-rouge&quot;&gt;Deep Learning AMI (Ubuntu 16.04)&lt;/code&gt; AMI. Using this image does introduce a bit of unneccessary overhead, however, it gurantees us that git and Docker will be pre-installed, so it will be our choice.&lt;/p&gt;
+&lt;p&gt;Next, you’ll want to use the tab on the left hand-side of the console to select &lt;code class=&quot;highlighter-rouge&quot;&gt;Instances -&amp;gt; Launch Instance&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;include picture of choosing launch instance!&lt;/p&gt;
+
+&lt;p&gt;This will lead you to a screen prompting you to “Choose you an Amazon Machine Image”. There are many options to choose from here, but our life will be made simplest by choosing the &lt;code class=&quot;highlighter-rouge&quot;&gt;Deep Learning AMI (Ubuntu 16.04)&lt;/code&gt; AMI. Using this image does introduce a bit of unneccessary overhead, however, it gurantees us that git and Docker will be pre-installed, so it will be our choice.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;../../../../../images/2020-03-11-streamlit-docker-pt2/ami.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;look at rest of images I saved to get gist&lt;/p&gt;
+&lt;p&gt;After this, we will choose the type of instance to use. To ensure that we’ll have enough space to build and run our Docker image, it’s a safe (and cheap) bet to pick a &lt;code class=&quot;highlighter-rouge&quot;&gt;t2.medium&lt;/code&gt; instance.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../../../../../images/2020-03-11-streamlit-docker-pt2/t2medium.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;div class=&quot;Toast Toast--warning googoo&quot;&gt;
+   &lt;span class=&quot;Toast-icon&quot;&gt;&lt;svg class=&quot;octicon octicon-alert octicon octicon-alert&quot; viewBox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; width=&quot;16&quot; height=&quot;16&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;
+   &lt;span class=&quot;Toast-content&quot;&gt;Your AWS account will be charged when you launch this instance. The good news is that you'll only be charged about $0.0464 per hour. Don't forget to terminate your instance when finished!&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;p&gt;From here, you can skip all the way to step 6 in launching the instance, which is where you’ll “Configure Security Group”. By default, all ports on our &lt;code class=&quot;highlighter-rouge&quot;&gt;EC2&lt;/code&gt; instance, other than &lt;code class=&quot;highlighter-rouge&quot;&gt;22&lt;/code&gt;, are closed to the public. In order to make our streamlit app publicly available, we need to open up port &lt;code class=&quot;highlighter-rouge&quot;&gt;8501&lt;/code&gt;. We can do so by creating a custom tcp rule, as pictured below.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../../../../../images/2020-03-11-streamlit-docker-pt2/tcp.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;With that set, you can click “launch”.&lt;/p&gt;
+
+&lt;p&gt;Lastly, we will need to &lt;code class=&quot;highlighter-rouge&quot;&gt;ssh&lt;/code&gt; into the instance to get the code to run our app in the cloud. This requires a key pair. You should be prompted to choose an existing key pair or create one. If you do not have an existing one, choose “Create a new key pair”, then download it!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../../../../../images/2020-03-11-streamlit-docker-pt2/key_pair.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;getting-your-web-app-in-the-cloud&quot;&gt;Getting your web app in the cloud&lt;/h2&gt;
 
-&lt;p&gt;once your instance has launched, follow the directions given here&lt;/p&gt;
+&lt;p&gt;At this point, your &lt;code class=&quot;highlighter-rouge&quot;&gt;EC2&lt;/code&gt; instance is being built and configured. You can follow its progress back in the AWS console. Once you see a green “running” icon next to your instance, you are able to toggle it, then click the “Connect” button near the top of the console. Follow AWS’s instructions (shown below) to &lt;code class=&quot;highlighter-rouge&quot;&gt;ssh&lt;/code&gt; into the instance from your local terminal.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;../../../../../images/2020-03-11-streamlit-docker-pt2/connect.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Then clone your webapp. For example, after &lt;code class=&quot;highlighter-rouge&quot;&gt;ssh&lt;/code&gt;ing into the instance, mine looks like&lt;/p&gt;
+&lt;p&gt;After &lt;code class=&quot;highlighter-rouge&quot;&gt;ssh&lt;/code&gt;ing into the instance, there are a few options to get our code into the cloud. This tutorial will assume your code is in a public github repository, however, if necessary, you can &lt;a href=&quot;https://github.com/juanfrans/notes/wiki/Copying-Files-Between-Local-Computer-and-Instance-(AWS)&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;scp&lt;/code&gt; your code directly from your local computer to your instance&lt;/a&gt;. For our purposes, we’ll use &lt;code class=&quot;highlighter-rouge&quot;&gt;git clone&lt;/code&gt;&lt;/p&gt;
 
-&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ubuntu@ip-172-31-10-243:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;git clone https://github.com/collinprather/streamlit-docker.git
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ubuntu@ip-172-31-10-244:~&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;git clone https://github.com/collinprather/streamlit-docker.git
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;then build and run your image on the instance&lt;/p&gt;
+&lt;p&gt;Now that our code is on the instance, we can use the 2 commands featured in &lt;a href=&quot;https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html&quot;&gt;part 1&lt;/a&gt; to build, then run the image.&lt;/p&gt;
 
-&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;streamlit-docker/
-docker image build &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; streamlit:app &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
-docker container run &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 8501:8501 &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; streamlit:app
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;streamlit-docker/
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker image build &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; streamlit:app &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker container run &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 8501:8501 &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; streamlit:app
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;then, you can get your EC2 instance’s public IP address from the console, or simply type&lt;/p&gt;
+&lt;p&gt;Now, the web app will be served at &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;EC2 public IP address&amp;gt;:8501&lt;/code&gt;! The public IP address can be found under “IPv4 Public IP” in the AWS console. Once you’ve located it, pull open a web browser and verify that your app is running as expected!&lt;/p&gt;
 
-&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ubuntu@ip-172-31-10-243:~/streamlit-docker&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;dig +short myip.opendns.com @resolver1.opendns.com
-34.220.127.248
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;then go to &lt;code class=&quot;highlighter-rouge&quot;&gt;34.220.127.248:8501&lt;/code&gt; to see your app!&lt;/p&gt;</content><author><name></name></author><summary type="html">Link to part 1 here!</summary></entry><entry><title type="html">Deploying web apps with Streamlit, Docker, and AWS - part 1</title><link href="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html" rel="alternate" type="text/html" title="Deploying web apps with Streamlit, Docker, and AWS - part 1" /><published>2020-03-10T00:00:00-05:00</published><updated>2020-03-10T00:00:00-05:00</updated><id>https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1</id><content type="html" xml:base="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html">&lt;h1 id=&quot;containerizing-a-streamlit-web-app-with-docker&quot;&gt;Containerizing a &lt;a href=&quot;https://www.streamlit.io/&quot;&gt;Streamlit&lt;/a&gt; web app with &lt;a href=&quot;https://www.docker.com/&quot;&gt;Docker&lt;/a&gt;&lt;/h1&gt;
+&lt;div class=&quot;Toast Toast--warning googoo&quot;&gt;
+   &lt;span class=&quot;Toast-icon&quot;&gt;&lt;svg class=&quot;octicon octicon-alert octicon octicon-alert octicon octicon-alert&quot; viewBox=&quot;0 0 16 16&quot; version=&quot;1.1&quot; width=&quot;16&quot; height=&quot;16&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;
+   &lt;span class=&quot;Toast-content&quot;&gt;When you're done, don't forget to terminate your instance!&lt;/span&gt;
+&lt;/div&gt;</content><author><name></name></author><summary type="html">This is part 2 of 3. Make sure to read through part 1 first!</summary></entry><entry><title type="html">Deploying web apps with Streamlit, Docker, and AWS - part 1</title><link href="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html" rel="alternate" type="text/html" title="Deploying web apps with Streamlit, Docker, and AWS - part 1" /><published>2020-03-10T00:00:00-05:00</published><updated>2020-03-10T00:00:00-05:00</updated><id>https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1</id><content type="html" xml:base="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html">&lt;h1 id=&quot;containerizing-a-streamlit-web-app-with-docker&quot;&gt;Containerizing a &lt;a href=&quot;https://www.streamlit.io/&quot;&gt;Streamlit&lt;/a&gt; web app with &lt;a href=&quot;https://www.docker.com/&quot;&gt;Docker&lt;/a&gt;&lt;/h1&gt;
 
 &lt;p&gt;In this tutorial, we will be assuming that you already have a streamlit app ready to deploy. 
 If you don’t, no worries! The &lt;a href=&quot;https://docs.streamlit.io/&quot;&gt;streamlit docs&lt;/a&gt; have some great &lt;a href=&quot;https://docs.streamlit.io/tutorial/index.html&quot;&gt;tutorials&lt;/a&gt;,
@@ -64,7 +84,7 @@ I’d recommend taking a look at this &lt;a href=&quot;https://docs.docker.com/e
 
 &lt;h2 id=&quot;the-dockerfile&quot;&gt;The Dockerfile&lt;/h2&gt;
 
-&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;Dockerfile&lt;/code&gt; for my &lt;a href=&quot;https://github.com/collinprather/streamlit-docker&quot;&gt;small example&lt;/a&gt; looks like this:&lt;/p&gt;
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;Dockerfile&lt;/code&gt; for my &lt;a href=&quot;https://github.com/collinprather/streamlit-docker/blob/master/Dockerfile&quot;&gt;small example&lt;/a&gt; looks like this:&lt;/p&gt;
 
 &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# base image&lt;/span&gt;
 &lt;span class=&quot;c&quot;&gt;# a little overkill but need it to install dot cli for dtreeviz&lt;/span&gt;
@@ -117,7 +137,7 @@ enableCORS = false\n\
 &lt;p&gt;It is worth mentioning that the &lt;code class=&quot;highlighter-rouge&quot;&gt;ubuntu&lt;/code&gt; portions of this &lt;code class=&quot;highlighter-rouge&quot;&gt;Dockerfile&lt;/code&gt; are a little bit overkill
 for the scale of this small web app, however, I found them necessary to get a nice rendering of 
 an svg file generated by the &lt;code class=&quot;highlighter-rouge&quot;&gt;dtreeviz&lt;/code&gt; package. This is also a great example of a simpler &lt;code class=&quot;highlighter-rouge&quot;&gt;Dockerfile&lt;/code&gt;
-on &lt;a href=&quot;&amp;quot;https://maelfabien.github.io/project/Streamlit/#&quot;&gt;this blog&lt;/a&gt;. There is a lot to unpack here, so I’ll do so line by line.&lt;/p&gt;
+on &lt;a href=&quot;https://maelfabien.github.io/project/Streamlit/#&quot;&gt;this blog&lt;/a&gt;. There is a lot to unpack here, so I’ll do so line by line.&lt;/p&gt;
 
 &lt;h3 id=&quot;ubuntu-commands&quot;&gt;Ubuntu commands&lt;/h3&gt;
 
@@ -138,7 +158,7 @@ on &lt;a href=&quot;&amp;quot;https://maelfabien.github.io/project/Streamlit/#&q
 
 &lt;h3 id=&quot;setting-up-the-app&quot;&gt;Setting up the app&lt;/h3&gt;
 
-&lt;p&gt;After that, we set up our actual application within the image. Since streamlit’s default port is &lt;code class=&quot;highlighter-rouge&quot;&gt;8501&lt;/code&gt;, we open up that port in the image.&lt;/p&gt;
+&lt;p&gt;After that, we set up our actual application within the image. Since streamlit’s default port is &lt;code class=&quot;highlighter-rouge&quot;&gt;8501&lt;/code&gt;, we open up that port.&lt;/p&gt;
 
 &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EXPOSE 8501
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
@@ -153,7 +173,7 @@ COPY &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;nb&quo
 
 &lt;div class=&quot;Toast&quot;&gt;
    &lt;span class=&quot;Toast-icon&quot;&gt;&lt;svg class=&quot;octicon octicon-info&quot; viewBox=&quot;0 0 14 16&quot; version=&quot;1.1&quot; width=&quot;14&quot; height=&quot;16&quot; aria-hidden=&quot;true&quot;&gt;&lt;path fill-rule=&quot;evenodd&quot; d=&quot;M6.3 5.69a.942.942 0 01-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 01-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;
-   &lt;span class=&quot;Toast-content&quot;&gt;It is typically not recommended to copy all files the the images the way we've done above (particularly is you have large files. Since this is a small example, it won't cause any issues for us.&lt;/span&gt;
+   &lt;span class=&quot;Toast-content&quot;&gt;It is typically not recommended to copy all files to the image the way we've done above (particularly if you have large files). However, since this is a small example, it won't cause any issues for us.&lt;/span&gt;
 &lt;/div&gt;
 
 &lt;h3 id=&quot;streamlit-specific-commands&quot;&gt;Streamlit-specific commands&lt;/h3&gt;
@@ -189,14 +209,14 @@ enableCORS = false\n\
    &lt;span class=&quot;Toast-content&quot;&gt;Note: you must run this command from the same directory as your Dockerfile&lt;/span&gt;
 &lt;/div&gt;
 
-&lt;p&gt;where &lt;code class=&quot;highlighter-rouge&quot;&gt;-t&lt;/code&gt; stands for “tag” and &lt;code class=&quot;highlighter-rouge&quot;&gt;.&lt;/code&gt; references the directory with the Dockerfile. When you run from the command line, you will see Docker moving through each step and installing lots of packages to the image. Once it is finished (make take a few minutes the first time), you should see a verification like &lt;code class=&quot;highlighter-rouge&quot;&gt;Successfully tagged streamlit:app&lt;/code&gt;, letting you know that the Docker image was successfully created. You can further verify that the image was created correctly by running &lt;code class=&quot;highlighter-rouge&quot;&gt;docker image ls&lt;/code&gt;, where you should see something like&lt;/p&gt;
+&lt;p&gt;where &lt;code class=&quot;highlighter-rouge&quot;&gt;-t&lt;/code&gt; tags our image as &lt;code class=&quot;highlighter-rouge&quot;&gt;streamlit:app&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;.&lt;/code&gt; references the directory with the Dockerfile. When you run from the command line, you will see Docker moving through each step defined in the &lt;code class=&quot;highlighter-rouge&quot;&gt;Dockerfile&lt;/code&gt; and installing many packages to the image. Once it is finished (it may take a few minutes the first time), you should see a verification like &lt;code class=&quot;highlighter-rouge&quot;&gt;Successfully tagged streamlit:app&lt;/code&gt;, letting you know that the Docker image was successfully created. You can further verify that the image was created correctly by running &lt;code class=&quot;highlighter-rouge&quot;&gt;docker image ls&lt;/code&gt;, where you should see something like&lt;/p&gt;
 
 &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker image &lt;span class=&quot;nb&quot;&gt;ls
 &lt;/span&gt;REPOSITORY                           TAG                 IMAGE ID            CREATED             SIZE
 streamlit                            app                 ecda3493de33        50 seconds ago      1.52GB
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;At this point, our image has been successfully built and we are ready to run the it, by way of container! (If the differences between an image and container are confusing, &lt;a href=&quot;https://nickjanetakis.com/blog/differences-between-a-dockerfile-docker-image-and-docker-container&quot;&gt;this short post&lt;/a&gt; provides some helpful distinctions.) One command will do the trick,&lt;/p&gt;
+&lt;p&gt;At this point, our image has been successfully built and we are ready to run it by way of container! (If the differences between an image and container are confusing, &lt;a href=&quot;https://nickjanetakis.com/blog/differences-between-a-dockerfile-docker-image-and-docker-container&quot;&gt;this short post&lt;/a&gt; provides some helpful distinctions). One command will do the trick,&lt;/p&gt;
 
 &lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker container run &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 8501:8501 &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; streamlit:app
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
