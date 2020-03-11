@@ -162,13 +162,21 @@ window.onload = wrap_img;
 </li>
 </ul><p>This is part 1 of a 3 part series. Make sure to read through <a href="https://collinprather.github.io/blog/docker/aws/2020/03/11/streamlit-docker-pt2.html">part 2</a> and <a href="https://collinprather.github.io/blog/docker/aws/2020/03/12/streamlit-docker-pt3.html">part 3</a> next!</p>
 
+<p>In this tutorial, we will be assuming the following:</p>
+<ul>
+  <li>You have a working Streamlit app ready to deploy
+    <ul>
+      <li>If you don’t, no worries! The <a href="https://docs.streamlit.io/">streamlit docs</a> have some great <a href="https://docs.streamlit.io/tutorial/index.html">tutorials</a>,
+but if you’d rather jump right in, you can go ahead and <code class="highlighter-rouge">git clone</code> my small example <a href="https://github.com/collinprather/streamlit-docker">here</a>.</li>
+    </ul>
+  </li>
+  <li>You have Docker installed</li>
+  <li>You have a working knowledge of the command line</li>
+</ul>
+
 <h1 id="containerizing-a-streamlit-web-app-with-docker">
 <a class="anchor" href="#containerizing-a-streamlit-web-app-with-docker" aria-hidden="true"><span class="octicon octicon-link"></span></a>Containerizing a <a href="https://www.streamlit.io/">Streamlit</a> web app with <a href="https://www.docker.com/">Docker</a>
 </h1>
-
-<p>In this tutorial, we will be assuming that you already have a streamlit app ready to deploy. 
-If you don’t, no worries! The <a href="https://docs.streamlit.io/">streamlit docs</a> have some great <a href="https://docs.streamlit.io/tutorial/index.html">tutorials</a>,
-but if you’d rather jump right in, you can go ahead and <code class="highlighter-rouge">git clone</code> my small example <a href="https://github.com/collinprather/streamlit-docker">here</a>.</p>
 
 <p>So let’s say that you’ve got your streamlit web app prepared in a directory that looks as follows:</p>
 
@@ -252,7 +260,7 @@ on <a href="https://maelfabien.github.io/project/Streamlit/#">this blog</a>. The
 <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FROM ubuntu:18.04
 </code></pre></div></div>
 
-<p>This means that docker pulls the <a href="https://hub.docker.com/_/ubuntu"><code class="highlighter-rouge">ubuntu:18.04</code></a> image from dockerhub to begin with.</p>
+<p>This means that Docker pulls the <a href="https://hub.docker.com/_/ubuntu"><code class="highlighter-rouge">ubuntu:18.04</code></a> image from DockerHub to begin with.</p>
 
 <p>Next, we update and install a few things we’ll need for our web app.</p>
 
@@ -265,7 +273,7 @@ on <a href="https://maelfabien.github.io/project/Streamlit/#">this blog</a>. The
 <h3 id="setting-up-the-app">
 <a class="anchor" href="#setting-up-the-app" aria-hidden="true"><span class="octicon octicon-link"></span></a>Setting up the app</h3>
 
-<p>After that, we set up our actual application within the image. Since streamlit’s default port is <code class="highlighter-rouge">8501</code>, we open up that port.</p>
+<p>After that, we set up our app within the image. Since streamlit’s default port is <code class="highlighter-rouge">8501</code>, we open up that port.</p>
 
 <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EXPOSE 8501
 </code></pre></div></div>
@@ -327,7 +335,7 @@ streamlit                            app                 ecda3493de33        50 
 
 <p>At this point, our image has been successfully built and we are ready to run it by way of container! (If the differences between an image and container are confusing, <a href="https://nickjanetakis.com/blog/differences-between-a-dockerfile-docker-image-and-docker-container">this short post</a> provides some helpful distinctions). One command will do the trick,</p>
 
-<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker container run <span class="nt">-p</span> 8501:8501 <span class="nt">-d</span> streamlit:app
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker container run <span class="nt">-p</span> 8501:8501 <span class="nt">-d</span> streamlit:app
 </code></pre></div></div>
 
 <p>where <code class="highlighter-rouge">-p</code> allows you to <em>publish</em> a container’s port to the host’s port and <code class="highlighter-rouge">-d</code> allows you to run it in the background. You can then verify that is is running with a command like this,</p>
