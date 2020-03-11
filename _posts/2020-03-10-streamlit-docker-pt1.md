@@ -5,7 +5,7 @@ comments: true
 layout: post
 hide: false
 search_exclude: false
-description: "Need to update description"
+description: "How to build a Dockerfile suited for a Streamlit web app."
 categories: [docker, AWS]
 ---
 

@@ -5,7 +5,7 @@ comments: true
 layout: post
 hide: false
 search_exclude: false
-description: "Need to update description"
+description: "How to launch an AWS EC2 instance."
 categories: [docker, AWS]
 ---
 
