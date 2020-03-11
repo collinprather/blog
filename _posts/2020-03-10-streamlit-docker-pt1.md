@@ -9,6 +9,8 @@ description: "How to build a Dockerfile suited for a Streamlit web app."
 categories: [docker, AWS]
 ---
 
+This is part 1 of a 3 part series. Make sure to read through [part 2](https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html) and [part 3](https://collinprather.github.io/blog/docker/aws/2020/03/12/streamlit-docker-pt3.html) next!
+
 # Containerizing a [Streamlit](https://www.streamlit.io/) web app with [Docker](https://www.docker.com/)
 
  In this tutorial, we will be assuming that you already have a streamlit app ready to deploy. 
