@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Distributed Gradient Descent with Spark | Collin Prather’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Distributed Gradient Descent with Spark" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Optimization for big data." />
+<meta property="og:description" content="Optimization for big data." />
+<link rel="canonical" href="https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html" />
+<meta property="og:url" content="https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html" />
+<meta property="og:site_name" content="Collin Prather’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-03-15T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Optimization for big data.","headline":"Distributed Gradient Descent with Spark","@type":"BlogPosting","dateModified":"2020-03-15T00:00:00-05:00","datePublished":"2020-03-15T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html"},"url":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://collinprather.github.io/blog/feed.xml" title="Collin Prather's blog" /><script async src="https://www.googletagmanager.com/gtag/js?id=UA-160320539-1"></script>
+<script>
+  window['ga-disable-UA-160320539-1'] = window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1";
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-160320539-1');
+</script>
+<link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Distributed Gradient Descent with Spark | Collin Prather’s blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Distributed Gradient Descent with Spark" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Optimization for big data." />
+<meta property="og:description" content="Optimization for big data." />
+<link rel="canonical" href="https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html" />
+<meta property="og:url" content="https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html" />
+<meta property="og:site_name" content="Collin Prather’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-03-15T00:00:00-05:00" />
+<script type="application/ld+json">
+{"description":"Optimization for big data.","headline":"Distributed Gradient Descent with Spark","@type":"BlogPosting","dateModified":"2020-03-15T00:00:00-05:00","datePublished":"2020-03-15T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html"},"url":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css"><link type="application/atom+xml" rel="alternate" href="https://collinprather.github.io/blog/feed.xml" title="Collin Prather's blog" /><script async src="https://www.googletagmanager.com/gtag/js?id=UA-160320539-1"></script>
+<script>
+  window['ga-disable-UA-160320539-1'] = window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1";
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-160320539-1');
+</script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    // remove paragraph tags in rendered toc (happens from notebooks)
+    var toctags = document.querySelectorAll(".toc-entry")
+    toctags.forEach(e => (e.firstElementChild.innerText = e.firstElementChild.innerText.replace('¶', '')))
+    });
+</script>
+</head><body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">Collin Prather&#39;s blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/about/">About Me</a><a class="page-link" href="/blog/featured/">Featured Projects</a><a class="page-link" href="/blog/presentations/">Presentations/Talks</a><a class="page-link" href="/blog/search/">Search</a><a class="page-link" href="/blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Distributed Gradient Descent with Spark</h1><p class="page-description">Optimization for big data.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-03-15T00:00:00-05:00" itemprop="datePublished">
+        Mar 15, 2020
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      10 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/blog/categories/#data science">data science</a>
+        
+      
+      </p>
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-wrap flex-justify-end">
+          <div class="px-2">
+
+    <a href="https://github.com/collinprather/blog/tree/master/_notebooks/2020-03-15-distributed-gradient-descent.ipynb" role="button">
+<img class="notebook-badge-image" src="/blog/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div><div class="px-2">
+    <a href="https://colab.research.google.com/github/collinprather/blog/blob/master/_notebooks/2020-03-15-distributed-gradient-descent.ipynb">
+        <img class="notebook-badge-image" src="/blog/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h1"><a href="#Gradient-descent-with-NumPy">Gradient descent with NumPy </a></li>
+<li class="toc-entry toc-h1"><a href="#Distributed-gradient-descent-with-PySpark">Distributed gradient descent with PySpark </a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#Saving-time-and-space-with-broadcasting">Saving time and space with broadcasting </a></li>
+</ul>
+</li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2020-03-15-distributed-gradient-descent.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This post will walk through how to implement the batch gradient descent algorithm in a distributed fashion, using <a href="https://spark.apache.org/docs/latest/api/python/pyspark.html">PySpark</a>. There are many <a href="https://ruder.io/optimizing-gradient-descent/">variations of gradient descent</a> out there, but this we will address "vanilla" gradient descent, and focus primarily on the implementational details in Spark.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Gradient descent is an optimization algorithm. Most typically, you'll see it associated with machine learning, which is the context we'll be working in, but it's important to acknowledge that it's fully able to stand up on it's own. The algorithm can equivalently be used to optimize a neural network or find the minimum of $f(x)=x^3-2x^2+2$. Generally speaking, the gradient descent algorithm tries to approximate what inputs correspond to the minimum value of a function. It makes no guarantees - meaning that the approximation may or may not be the true minimum. Mechanically, the algorithm exploits the property that the <a href="https://math.stackexchange.com/questions/223252/why-is-gradient-the-direction-of-steepest-ascent">gradient points in the direction of steepest ascent</a>. I will not be getting too deep into the weeds with the math, but if you're interested, here is a <a href="https://hackernoon.com/life-is-gradient-descent-880c60ac1be8">high-level</a> and <a href="https://mathworld.wolfram.com/MethodofSteepestDescent.html">low-level</a> overview.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Gradient-descent-with-NumPy">
+<a class="anchor" href="#Gradient-descent-with-NumPy" aria-hidden="true"><span class="octicon octicon-link"></span></a>Gradient descent with NumPy<a class="anchor-link" href="#Gradient-descent-with-NumPy"> </a>
+</h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Before jumping directly into a distributed setting, it's helpful to start with a small example. First, we'll get our head around a vectorized implementation of gradient descent for linear regression, using NumPy.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Linear regression can be used to make predictions about a continuous target variable, using a set of predictor variables. We'll refer to those predictions as $\hat{y}$, where</p>
+$$\hat{y} = \underbrace{X}_{m\times n}\cdot \underbrace{w}_{n\times 1}$$<p>and $X$ is a matrix of $m$ observations, each observation composed of $n$ predictor variables. Additionally, $w$ is a vector of $n$ <em>weights</em> (aka coefficients). Since our focus in on the algorithm, we'll use <code>sklearn.datasets.make_regression()</code> to generate a dataset, $X$, that is amenable to linear regression.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#collapse</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'text.usetex'</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_regression</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">r2_score</span>
+<span class="kn">import</span> <span class="nn">time</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+    </details>
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">data_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"n_samples"</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span> <span class="s2">"n_features"</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>
+               <span class="s2">"noise"</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s2">"coef"</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span> 
+               <span class="s2">"random_state"</span><span class="p">:</span><span class="mi">742</span><span class="p">}</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">coef</span> <span class="o">=</span> <span class="n">make_regression</span><span class="p">(</span><span class="o">**</span><span class="n">data_kwargs</span><span class="p">)</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"X is of type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="si">}</span><span class="s2">, and of dimension: </span><span class="si">{</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"w is of type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">w</span><span class="p">)</span><span class="si">}</span><span class="s2">, and of dimension: </span><span class="si">{</span><span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"y is of type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="si">}</span><span class="s2">, and of dimension: </span><span class="si">{</span><span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>X is of type: &lt;class 'numpy.ndarray'&gt;, and of dimension: (100, 2).
+w is of type: &lt;class 'numpy.ndarray'&gt;, and of dimension: (2, 1).
+y is of type: &lt;class 'numpy.ndarray'&gt;, and of dimension: (100, 1).
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p></p>
+<div class="Toast">
+   <span class="Toast-icon"><svg class="octicon octicon-info octicon octicon-info octicon octicon-info octicon octicon-info" viewbox="0 0 14 16" version="1.1" width="14" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M6.3 5.69a.942.942 0 01-.28-.7c0-.28.09-.52.28-.7.19-.18.42-.28.7-.28.28 0 .52.09.7.28.18.19.28.42.28.7 0 .28-.09.52-.28.7a1 1 0 01-.7.3c-.28 0-.52-.11-.7-.3zM8 7.99c-.02-.25-.11-.48-.31-.69-.2-.19-.42-.3-.69-.31H6c-.27.02-.48.13-.69.31-.2.2-.3.44-.31.69h1v3c.02.27.11.5.31.69.2.2.42.31.69.31h1c.27 0 .48-.11.69-.31.2-.19.3-.42.31-.69H8V7.98v.01zM7 2.3c-3.14 0-5.7 2.54-5.7 5.68 0 3.14 2.56 5.7 5.7 5.7s5.7-2.55 5.7-5.7c0-3.15-2.56-5.69-5.7-5.69v.01zM7 .98c3.86 0 7 3.14 7 7s-3.14 7-7 7-7-3.12-7-7 3.14-7 7-7z"></path></svg></span>
+   <span class="Toast-content">Note: linear regression often has an intercept term in addition to the weights. We choost to omit it in this post.</span>
+</div>
+
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#collapse</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$x_1$"</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$y$"</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+    </details>
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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%0A">
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>For our case, it's safe to instantiate $w$ with zeros. In machine learning, gradient descent iteratively updates the weights to minimize some loss function. The loss function's job is to tell us <em>how wrong</em> our weights are at any given step of the algorithm. For linear regression, our loss function is the mean squared error of our predictions, $\hat{y}$, and the target variable, $y$.</p>
+$$
+\begin{aligned}
+MSE(y, \hat{y}) &amp;= \frac{1}{m}\left(y - \hat{y}\right)^2\\
+&amp;= \frac{1}{m}\left(y - X\cdot w\right)^2
+\end{aligned}
+$$<p>The vectorized gradient of MSE is (for a full derivation, see <a href="https://math.stackexchange.com/questions/2887916/cost-function-vectorized-implementation">this stack exchange</a>),</p>
+$$\frac{\partial\ \text{MSE}}{\partial\ w} = -\left(\frac{2}{m}\right)X^T\cdot \left(y - X\cdot w\right)$$
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><em>You should note: in the equations about, we are doing element-wise subtraction between vectors $y$ and $\hat{y}$, as well as a dot product between a $X$ and $w$.</em></p>
+<p>In code, the MSE and its gradient can be implemented like this,</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">mse</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">mse_gradient</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+    <span class="n">residual</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">/</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">residual</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>At this point, we have all the pieces we need to put the gradient descent algorithm to use in finding the optimal $w$. In our implementation, we will make <code>n_iters</code> updates to <code>w</code>, each time re-assigning it with the following rule,</p>
+$$w \leftarrow w - \alpha \ \left(\frac{\partial\ \text{MSE}}{\partial\ w}\right)$$<p>where $\alpha$ is a small constant referred to as the <a href="https://heartbeat.fritz.ai/introduction-to-learning-rates-in-machine-learning-6ed685c16506">learning rate</a>.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># leaning towards verbosity to make code as clear as possible</span>
+<span class="k">def</span> <span class="nf">gradient_descent</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_iters</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iters</span><span class="p">):</span>
+        <span class="n">w_gradient</span> <span class="o">=</span> <span class="n">mse_gradient</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">w</span> <span class="o">-</span> <span class="n">learning_rate</span><span class="o">*</span><span class="n">w_gradient</span>
+    
+    <span class="k">return</span> <span class="n">w</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There are a couple ways to verify that our algorithm is working correctly. The simplest way is to plot our predictions against the raw data.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># change `n_features` for illustrative example</span>
+<span class="n">data_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"n_features"</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">coef</span> <span class="o">=</span> <span class="n">make_regression</span><span class="p">(</span><span class="o">**</span><span class="n">data_kwargs</span><span class="p">)</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">gradient_descent</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#collapse</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+<span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">'r'</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$x_1$"</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$y$"</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Our gradient descent converged on w = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Scikit-Learn used w = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">coef</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2"> to generate the data."</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+    </details>
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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%0A">
+</div>
+
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Our gradient descent converged on w = 3.0048.
+Scikit-Learn used w = 3.0549 to generate the data.
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It can be a bit trickier to visualize our predictions with multi-dimensional data, so we'll resort to evaluating $R^2$ scores, plotting the losses, and directly comparing the weights to Scikit-Learn's.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<hr>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Distributed-gradient-descent-with-PySpark">
+<a class="anchor" href="#Distributed-gradient-descent-with-PySpark" aria-hidden="true"><span class="octicon octicon-link"></span></a>Distributed gradient descent with PySpark<a class="anchor-link" href="#Distributed-gradient-descent-with-PySpark"> </a>
+</h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><em>Many of the ideas presented here come from <a href="https://stanford.edu/~rezab/classes/cme323/S17/notes/lecture16/cme323_lec16.pdf">this lecture</a>, given in the Spring of 2017 by Reza Zadeh, from Stanford.</em></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>A single CPU is enough to crunch all of the matrix computation in the simple example above, but in the real-world setting, it is not uncommon to deal with datasets that are quite a few orders of magnitude larger. In these scenarios, it becomes advantageous to use multiple computers, in unison, to carry out our computations. For this, Spark is the perfect tool. While Spark's <a href="https://spark.apache.org/mllib/">MLlib</a> has many off-the self algorithms, implementing our own gradient descent is a fantastic exercise to broaden our understanding of Spark and distributed computing.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pyspark</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">pyspark</span><span class="o">.</span><span class="n">SparkContext</span><span class="p">()</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's simulate some big(ger) data by bumping up <code>n_samples</code> to 1 million and <code>n_features</code> to 10.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">data_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"n_samples"</span><span class="p">:</span><span class="mi">1_000_000</span><span class="p">,</span> <span class="s2">"n_features"</span><span class="p">:</span><span class="mi">10</span><span class="p">})</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">coef</span> <span class="o">=</span> <span class="n">make_regression</span><span class="p">(</span><span class="o">**</span><span class="n">data_kwargs</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="n">rdd</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Our RDD has </span><span class="si">{</span><span class="n">rdd</span><span class="o">.</span><span class="n">getNumPartitions</span><span class="p">()</span><span class="si">}</span><span class="s2"> partitions."</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Our RDD has 12 partitions.
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Above, we've converted our dataset from a NumPy array to a Spark <a href="https://spark.apache.org/docs/latest/rdd-programming-guide.html">resilient, distributed dataset (RDD)</a>. It should be noted that we've used <code>np.hstack()</code> to combine our target, $y$, with our data, $X$. We'll have to remember that the last value in each row of the RDD is the target. This RDD splits up our dataset row by row and distributes those rows across each of our 12 partitions. Since our rows are not all collected in one place, we no longer have the ability to vectorize the computation across the entire dataset - instead we'll employ for loops to make aggregations in parallel on each partition. When calculating the gradients, we must do so <em>row by row</em>. Our approach will be to map each row of the RDD to its corresponding gradient, with respect to the weights. After this transformation, each row should maintain its dimension.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">distributed_mse_gradient</span><span class="p">(</span><span class="n">rdd_row</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">rdd_row</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">rdd_row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">residual</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x_j</span><span class="o">*</span><span class="n">w_j</span> <span class="k">for</span> <span class="n">x_j</span><span class="p">,</span> <span class="n">w_j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span> <span class="c1"># dot product</span>
+    <span class="n">weights_gradient</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">x_j</span><span class="o">*</span><span class="n">residual</span> <span class="k">for</span> <span class="n">x_j</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">weights_gradient</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The line that computes <code>residual</code> looks starkly different than it did in the original <code>mse_gradient()</code> function. It uses a nested <code>sum()</code> and generator comprehension to compute the dot product between $x$ and $w$.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+$$\underbrace{x\cdot w}_{\text{dot product}} = \sum_{j=1}^{n}x_j\cdot w_j$$
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Another distinction is that we've dropped the constant, $2$, on the front of the gradient. Since it is a constant, it will only impact the magnitude and not the direction of the gradient, which is what it is of interest to us.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Moreover, batch gradient descent requires us to use the average of all gradients across the entire dataset. This means that we have to implement some functionality to combine the gradients in each partition, then combine the aggregated gradients across all partitions. In Spark's vernacular, we need to <em>reduce</em> the RDD to a single row. We'll start by taking a cumulative sum of all gradients, then dividing by the number of rows in the RDD, $m$, later.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># cumulative sum of gradients</span>
+<span class="k">def</span> <span class="nf">cum_sum_gradients</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">next_row</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">gradient</span><span class="o">+</span><span class="n">next_gradient</span> <span class="k">for</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">next_gradient</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">next_row</span><span class="p">)]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We these two helper functions, we can construct our distributed gradient descent loop.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># again, verbosity for clarity</span>
+<span class="k">def</span> <span class="nf">distributed_gradient_descent</span><span class="p">(</span><span class="n">rdd</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_iters</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rdd</span><span class="o">.</span><span class="n">first</span><span class="p">())</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="c1"># -1 because the last value is y</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">rdd</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iters</span><span class="p">):</span>
+        <span class="n">rdd_gradient</span> <span class="o">=</span> <span class="n">rdd</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">distributed_mse_gradient</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>\
+                          <span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">,</span> <span class="n">next_row</span><span class="p">:</span> <span class="n">cum_sum_gradients</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">next_row</span><span class="p">))</span>
+        
+        <span class="c1"># scaling with m and learning rate</span>
+        <span class="n">w_gradient</span> <span class="o">=</span> <span class="p">[</span><span class="n">learning_rate</span><span class="o">*</span><span class="p">(</span><span class="n">w</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">rdd_gradient</span><span class="p">]</span>
+        
+        <span class="c1"># updating weights</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="p">[</span><span class="n">w_j</span> <span class="o">-</span> <span class="n">w_grad_j</span> <span class="k">for</span> <span class="n">w_j</span><span class="p">,</span> <span class="n">w_grad_j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">w_gradient</span><span class="p">)]</span>
+        
+    <span class="k">return</span> <span class="n">w</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's take a moment to understand which lines are <a href="https://spark.apache.org/docs/latest/rdd-programming-guide.html#transformations">transformations</a> and which are <a href="https://spark.apache.org/docs/latest/rdd-programming-guide.html#actions">actions</a>. In order to set things up, we must instantiate $w$ and $m$, which require <code>rdd.first()</code> and <code>rdd.count()</code>, respectively. These are both <em>actions</em>, meaning they kick off the Spark driver and run the code immediately. After we enter the loop, we map each row of the RDD to its corresponding gradient with <code>rdd.map()</code>. In Spark, mapping is <em>lazy evaluated</em>, meaning that when this line hits the interpreter, <em>nothing happens.</em> Well, that's not entirely true, however, what you'd expect does not necessarily happen. Instead of carrying out any mapping, Spark just adds the transformation to the RDD's <a href="https://mallikarjuna_g.gitbooks.io/spark/spark-rdd-lineage.html">lineage</a>, making a plan for the computation without executing it. It is not until the <code>.reduce()</code> (which is an action) line gets run, that Spark begins executing on the RDD and subsequently maps, then reduces it. This mapping and reducing yields us the gradient of our mean-squared loss function, which we use to update $w$ <code>n_iters</code> times.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">w</span> <span class="o">=</span> <span class="n">distributed_gradient_descent</span><span class="p">(</span><span class="n">rdd</span><span class="p">,</span> <span class="n">n_iters</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<details class="description">
+      <summary class="btn btn-sm" data-open="Hide Code" data-close="Show Code"></summary>
+        <p></p>
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#collapse</span>
+<span class="n">w</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">w_j</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">w_j</span> <span class="ow">in</span> <span class="n">w</span><span class="p">]</span>
+<span class="n">coef</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">coef</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""Here is a side-by-side comparison of our coefficients with Scikit-Learn's:</span>
+<span class="s2">distributed gradient descent -&gt; </span><span class="si">{</span><span class="n">w</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">Scikit-Learn's coefficients  -&gt; </span><span class="si">{</span><span class="n">coef</span><span class="si">}</span><span class="s2">"""</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+    </details>
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Here is a side-by-side comparison of our coefficients with Scikit-Learn's:
+distributed gradient descent -&gt; [21.07, 29.56, 15.26, 19.46, 0.9, 74.74, 18.99, 94.1, 49.16, 79.15]
+Scikit-Learn's coefficients  -&gt; [21.18, 29.71, 15.33, 19.56, 0.91, 75.13, 19.09, 94.59, 49.41, 79.57]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Looks good!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Saving-time-and-space-with-broadcasting">
+<a class="anchor" href="#Saving-time-and-space-with-broadcasting" aria-hidden="true"><span class="octicon octicon-link"></span></a>Saving time and space with broadcasting<a class="anchor-link" href="#Saving-time-and-space-with-broadcasting"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There is one subtlety in our distributed gradient descent implementation that can be further optimized. When we map each row to its gradient, we must also pass it <code>w</code> each time, as it needs it for the computation. By default, Spark makes a copy of <code>w</code> and sends it to each of the 12 partitions. If each partition were going to be making changes to the weights, this would be necessary, however, they are not! In fact, each partition could make the gradient computations with <em>read-only</em> access to <code>w</code>. As a result, we are wasting space by storing a copy of <code>w</code> on each partition, and wasting time by sending it to each partition on each iteration.</p>
+<p>Spark's solution is to use a <a href="https://spark.apache.org/docs/latest/rdd-programming-guide.html#broadcast-variables">broadcast variable</a>, which instead sends a single copy of <code>w</code> to each partition. We can add broadcasting to our <code>distributed_gradient_descent()</code> function with two extra lines.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># enhanced with broadcasting</span>
+<span class="k">def</span> <span class="nf">distributed_gradient_descent</span><span class="p">(</span><span class="n">rdd</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_iters</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rdd</span><span class="o">.</span><span class="n">first</span><span class="p">())</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>       <span class="c1"># broadcasting w</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">rdd</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iters</span><span class="p">):</span>
+        <span class="n">rdd_gradient</span> <span class="o">=</span> <span class="n">rdd</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">distributed_mse_gradient</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>\
+                          <span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">,</span> <span class="n">next_row</span><span class="p">:</span> <span class="n">cum_sum_gradients</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">next_row</span><span class="p">))</span>
+        <span class="n">w_gradient</span> <span class="o">=</span> <span class="p">[</span><span class="n">learning_rate</span><span class="o">*</span><span class="p">(</span><span class="n">w</span><span class="o">/</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">rdd_gradient</span><span class="p">]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="p">[</span><span class="n">w_j</span> <span class="o">-</span> <span class="n">w_grad_j</span> <span class="k">for</span> <span class="n">w_j</span><span class="p">,</span> <span class="n">w_grad_j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">w_gradient</span><span class="p">)]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>    <span class="c1"># re-broadcasting w on each iter</span>
+    <span class="k">return</span> <span class="n">w</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>After broadcasting <code>w</code>, we have to call <code>w.value</code> to access the underlying weights.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">w</span> <span class="o">=</span> <span class="n">distributed_gradient_descent</span><span class="p">(</span><span class="n">rdd</span><span class="p">,</span> <span class="n">n_iters</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># shutting down spark context</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="collinprather/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/blog/data%20science/2020/03/15/distributed-gradient-descent.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p></p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/collinprather" title="collinprather"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://www.linkedin.com/in/collin-prather" title="collin-prather"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#linkedin"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
