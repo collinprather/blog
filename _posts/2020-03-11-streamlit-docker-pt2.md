@@ -68,3 +68,5 @@ ubuntu@ip-172-31-10-244:~/streamlit-docker$ docker container run -p 8501:8501 -d
 Now, the web app will be served at `<EC2 public IP address>:8501`! The public IP address can be found under "IPv4 Public IP" in the AWS console. Once you've located it, pull open a web browser and verify that your app is running as expected!
 
 {% include alert.html text="When you're done, don't forget to terminate your instance!" %}
+
+Now, head over to [part 3](https://collinprather.github.io/blog/docker/aws/2020/03/12/streamlit-docker-pt3.html) to learn how to add a Postgres backend to this app!

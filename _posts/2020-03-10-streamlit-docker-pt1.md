@@ -1,6 +1,7 @@
 ---
 title: "Deploying web apps with Streamlit, Docker, and AWS - part 1"
 toc: true
+image: images/2020-03-10-streamlit-docker-pt1/app.gif
 comments: true
 layout: post
 hide: false
@@ -189,4 +190,6 @@ CONTAINER ID        IMAGE               COMMAND                  CREATED        
 
 Better yet, pop open a web browser and you can view your web app, running in a docker container, at `http://localhost:8501/`. If you're using my example, it should look something like this!
 
-![](../../../../../images/2020-03-10-streamlit-docker-pt1/streamlit-example.png)
+![](../../../../../images/2020-03-10-streamlit-docker-pt1/app.gif)
+
+Now, checkout out [part 2](https://collinprather.github.io/blog/docker/aws/2020/03/11/streamlit-docker-pt2.html) to learn how to move this app off of your laptop and into the cloud!

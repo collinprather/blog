@@ -1,6 +1,7 @@
 ---
 title: "Deploying web apps with Streamlit, Docker, and AWS - part 3"
 toc: true
+image: images/2020-03-12-streamlit-docker-pt3/app-done.gif
 comments: true
 layout: post
 hide: false
@@ -17,7 +18,7 @@ In parts 1 and 2, we covered how to build a Docker image for a Streamlit web app
 
 We've had a running example of a bare-bones web app that could be used to deploy a machine learning model for use by non-technical employees.
 
-![](../../../../../images/2020-03-12-streamlit-docker-pt3/app.png)
+![](../../../../../images/2020-03-12-streamlit-docker-pt3/app.gif)
 
 In some circumstances, we may want the users of this web app to have access not only to the predictions of this model, but also to certain subsets of the underlying data itself. In the example above, it would be nice to grant the users the ability to query specific rows from the dataset which fall into a given leaf of the decision tree. In other words, to give them snapshots of the data, like this (the example uses the famous [Boston housing dataset](https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html),
  as provided by `scikit-learn`)
@@ -190,7 +191,7 @@ $
 
 With our containers running, we can view the app in a web browser at `http://localhost:8501/`. If you need to share the app with others, you can use the steps covered in [part 2](https://collinprather.github.io/blog//docker/aws/2020/03/11/streamlit-docker-pt2.html) to deploy this app to the cloud.
 
-![](../../../../../images/2020-03-12-streamlit-docker-pt3/app-done.png)
+![](../../../../../images/2020-03-12-streamlit-docker-pt3/app-done.gif)
 
 When you're finished, you can use this command to stop and remove the containers running your app and database.
 
