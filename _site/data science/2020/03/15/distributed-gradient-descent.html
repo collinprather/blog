@@ -112,7 +112,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      10 min read
+      11 min read
     
 </span></p>
 
@@ -877,6 +877,40 @@ Scikit-Learn's coefficients  -&gt; [21.18, 29.71, 15.33, 19.56, 0.91, 75.13, 19.
 </div>
     
 
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If you run this notebook locally, the distributed implementation almost certainly won't beat NumPy. The reason for this is that NumPy automatically makes use of all processors, and the overhead involved in setting up a Spark job. As Brandon Rohrer said, "It's tough to beat NumPy".</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>
+</p>
+<center>
+    <div class="jekyll-twitter-plugin">
+<blockquote class="twitter-tweet">
+<p lang="en" dir="ltr">Out of curiosity, I compared @numba_ji -accelerated for loops to <a href="https://twitter.com/numpy_team?ref_src=twsrc%5Etfw">@numpy_team</a> matmul for matrix multiplication. On my machine, they would have been close to the same *except* numpy automatically splits the job up so as to make use of all the processors, giving an n_proc X speedup. <a href="https://t.co/P0rTVzoZch">pic.twitter.com/P0rTVzoZch</a></p>— Brandon Rohrer (@_brohrer_) <a href="https://twitter.com/_brohrer_/status/1226496604473090049?ref_src=twsrc%5Etfw">February 9, 2020</a>
+</blockquote>
+<script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</div>
+</center>
+
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Spark truly shines when it's used to coordinate jobs across multiple machines. An interesting next step would be to spin up a cluster on <a href="https://aws.amazon.com/emr/">AWS EMR</a> and increase <code>n_samples</code> to observe how well Spark is able to scale.</p>
+
+</div>
+</div>
+</div>
 </div>
 
 

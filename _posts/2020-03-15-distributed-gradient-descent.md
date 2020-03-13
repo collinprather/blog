@@ -704,6 +704,27 @@ Scikit-Learn&#39;s coefficients  -&gt; [21.18, 29.71, 15.33, 19.56, 0.91, 75.13,
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If you run this notebook locally, the distributed implementation almost certainly won't beat NumPy. The reason for this is that NumPy automatically makes use of all processors, and the overhead involved in setting up a Spark job. As Brandon Rohrer said, "It's tough to beat NumPy".</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>{% include twitter.html content='<a href="https://twitter.com/_brohrer_/status/1226496604473090049">https://twitter.com/_brohrer_/status/1226496604473090049</a>' %}</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Spark truly shines when it's used to coordinate jobs across multiple machines. An interesting next step would be to spin up a cluster on <a href="https://aws.amazon.com/emr/">AWS EMR</a> and increase <code>n_samples</code> to observe how well Spark is able to scale.</p>
+
+</div>
+</div>
+</div>
 </div>
  
 
