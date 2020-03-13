@@ -12,10 +12,11 @@
 <link rel="canonical" href="https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html" />
 <meta property="og:url" content="https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html" />
 <meta property="og:site_name" content="Collin Prather’s blog" />
+<meta property="og:image" content="https://collinprather.github.io/blog/images/2020-03-15-distributed-gradient-descent/linreg.png" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2020-03-15T00:00:00-05:00" />
 <script type="application/ld+json">
-{"description":"Optimization for big data.","headline":"Distributed Gradient Descent with Spark","@type":"BlogPosting","dateModified":"2020-03-15T00:00:00-05:00","datePublished":"2020-03-15T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html"},"url":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html","@context":"https://schema.org"}</script>
+{"description":"Optimization for big data.","headline":"Distributed Gradient Descent with Spark","@type":"BlogPosting","dateModified":"2020-03-15T00:00:00-05:00","datePublished":"2020-03-15T00:00:00-05:00","image":"https://collinprather.github.io/blog/images/2020-03-15-distributed-gradient-descent/linreg.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html"},"url":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://collinprather.github.io/blog/feed.xml" title="Collin Prather's blog" /><script async src="https://www.googletagmanager.com/gtag/js?id=UA-160320539-1"></script>
 <script>
@@ -36,10 +37,11 @@
 <link rel="canonical" href="https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html" />
 <meta property="og:url" content="https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html" />
 <meta property="og:site_name" content="Collin Prather’s blog" />
+<meta property="og:image" content="https://collinprather.github.io/blog/images/2020-03-15-distributed-gradient-descent/linreg.png" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2020-03-15T00:00:00-05:00" />
 <script type="application/ld+json">
-{"description":"Optimization for big data.","headline":"Distributed Gradient Descent with Spark","@type":"BlogPosting","dateModified":"2020-03-15T00:00:00-05:00","datePublished":"2020-03-15T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html"},"url":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html","@context":"https://schema.org"}</script>
+{"description":"Optimization for big data.","headline":"Distributed Gradient Descent with Spark","@type":"BlogPosting","dateModified":"2020-03-15T00:00:00-05:00","datePublished":"2020-03-15T00:00:00-05:00","image":"https://collinprather.github.io/blog/images/2020-03-15-distributed-gradient-descent/linreg.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html"},"url":"https://collinprather.github.io/blog/data%20science/2020/03/15/distributed-gradient-descent.html","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 <link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
@@ -469,6 +471,7 @@ $$w \leftarrow w - \alpha \ \left(\frac{\partial\ \text{MSE}}{\partial\ w}\right
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$x_1$"</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">"$y$"</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="c1"># plt.savefig("../images/2020-03-15-distributed-gradient-descent/linreg.png")</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Our gradient descent converged on w = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Scikit-Learn used w = </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">coef</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span><span class="si">}</span><span class="s2"> to generate the data."</span><span class="p">)</span>
