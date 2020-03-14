@@ -167,7 +167,7 @@ window.onload = wrap_img;
 <li class="toc-entry toc-h2"><a href="#viewing-and-stopping-your-app">Viewing and stopping your app</a></li>
 </ul>
 </li>
-</ul><p>This is part 3 of 3-part series. Make sure to read through <a href="https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html">part 1</a> and <a href="https://collinprather.github.io/blog//docker/aws/2020/03/11/streamlit-docker-pt2.html">part 2</a> before you continue!</p>
+</ul><p>This is part 3 of a 3-part series. Make sure to read through <a href="https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html">part 1</a> and <a href="https://collinprather.github.io/blog//docker/aws/2020/03/11/streamlit-docker-pt2.html">part 2</a> before you continue!</p>
 
 <p>In parts 1 and 2, we covered how to build a Docker image for a Streamlit web app and how to move your code into the cloud. In this post, we will walk through how to connect other containerized services to your app. Specifically, we’ll connect to a Postgres database, but this process should hold for any other service you’d like to employ.</p>
 
@@ -290,7 +290,7 @@ window.onload = wrap_img;
   </tbody>
 </table>
 
-<p>The easiest way to add this feature to our web app would just be to save the dataset as part of our source code and ensure it gets included in the Docker image. This approach, however, can quickly become infeasible as our dataset gets large, or we want to make any updates to it. A more robust solution would be to connect our web app directly to a database, enabling us to detach the app and the data at will, and freely make revisions to either in tandem.</p>
+<p>The easiest way to add this feature to our web app would just be to save the dataset as part of our source code and ensure it gets included in the Docker image. This approach, however, can quickly become infeasible as our dataset gets large, or we want to make any updates to it. A more robust solution would be to connect our web app directly to a database, enabling us to decouple the app and the data at will, and freely make revisions to either in tandem.</p>
 
 <h1 id="introducing-docker-compose">
 <a class="anchor" href="#introducing-docker-compose" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introducing docker-compose</h1>
@@ -353,7 +353,7 @@ volumes:
 <p>Here, we let Docker know that we want to use the <code class="highlighter-rouge">postgres:12</code> image from DockerHub and refer to it as <code class="highlighter-rouge">postgres</code>. Since <code class="highlighter-rouge">5432</code> is the default port for postgres, we make sure to map that to the container’s outgoing <code class="highlighter-rouge">5432</code> port, so that it will be accessible by the app. Next, we mount our postgres database (<code class="highlighter-rouge">db_data</code>) to the location within the container that postgres stores all of its data, <code class="highlighter-rouge">/var/lib/postgresql/data</code> (<a href="https://linuxhint.com/run_postgresql_docker_compose/">this blog</a> explains why this is the preferred method to gurantee our data is persisted). Lastly, we point the database towards a <code class="highlighter-rouge">.env</code> file which contains the username, password, and default name of our database. This file enables us to programmatically query the database without leaving our password in the source code!</p>
 
 <div class="Toast Toast--warning googoo">
-   <span class="Toast-icon"><svg class="octicon octicon-alert octicon octicon-alert octicon octicon-alert octicon octicon-alert" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>
+   <span class="Toast-icon"><svg class="octicon octicon-alert octicon octicon-alert octicon octicon-alert" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>
    <span class="Toast-content">The environment file should never be pushed to Github!</span>
 </div>
 
@@ -387,7 +387,7 @@ volumes:
 
 <p>All the action commences with <code class="highlighter-rouge">context: .</code>, which indicates to Docker that the building of our <code class="highlighter-rouge">streamlit</code> image should be governed by a <code class="highlighter-rouge">Dockerfile</code> residing in the same directory as the <code class="highlighter-rouge">docker-compose.yml</code>. Other than that, we open up streamlit’s default <code class="highlighter-rouge">8501</code> port, just as we did in <a href="https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html">part 1</a>.</p>
 
-<p>Most commonly, you will already have a Postgres instance storing your data. Since our app uses data retrieved via api, there is one extra step we must take to get this data into the database. This can be handled by making use of a script that retrieves the data, then loads it into the database each time the app’s image is built. To do so, we must add the following line to our <code class="highlighter-rouge">Dockerfile</code>.</p>
+<p>Most commonly, you will already have a Postgres instance storing your data. Since our app uses data retrieved via api, there is one extra step we must take to get this data into the database. This can be handled by making use of a script that retrieves the data, then loads it into the database each time the app’s image is built. To do so, we must add the following line to our <code class="highlighter-rouge">Dockerfile</code>. (see full <code class="highlighter-rouge">Dockerfile</code> <a href="https://github.com/collinprather/streamlit-docker/blob/docker-compose%2Bpostgres/Dockerfile">here</a>)</p>
 
 <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CMD python3 scripts/load_docker_db.py
 </code></pre></div></div>
