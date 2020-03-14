@@ -10,7 +10,7 @@ description: "Using docker-compose to add a Postgres database to our web app."
 categories: [docker, AWS]
 ---
 
-This is part 3 of 3-part series. Make sure to read through [part 1](https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html) and [part 2](https://collinprather.github.io/blog//docker/aws/2020/03/11/streamlit-docker-pt2.html) before you continue!
+This is part 3 of a 3-part series. Make sure to read through [part 1](https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html) and [part 2](https://collinprather.github.io/blog//docker/aws/2020/03/11/streamlit-docker-pt2.html) before you continue!
 
 In parts 1 and 2, we covered how to build a Docker image for a Streamlit web app and how to move your code into the cloud. In this post, we will walk through how to connect other containerized services to your app. Specifically, we'll connect to a Postgres database, but this process should hold for any other service you'd like to employ.
 
@@ -31,7 +31,7 @@ In some circumstances, we may want the users of this web app to have access not 
 |  3 | 0.03237 |    0 |    2.18 |      0 | 0.458 | 6.998 |  45.8 | 6.0622 |     3 |   222 |      18.7 | 394.63 |    2.94 |    33.4 |
 |  4 | 0.06905 |    0 |    2.18 |      0 | 0.458 | 7.147 |  54.2 | 6.0622 |     3 |   222 |      18.7 | 396.9  |    5.33 |    36.2 |
 
-The easiest way to add this feature to our web app would just be to save the dataset as part of our source code and ensure it gets included in the Docker image. This approach, however, can quickly become infeasible as our dataset gets large, or we want to make any updates to it. A more robust solution would be to connect our web app directly to a database, enabling us to detach the app and the data at will, and freely make revisions to either in tandem.
+The easiest way to add this feature to our web app would just be to save the dataset as part of our source code and ensure it gets included in the Docker image. This approach, however, can quickly become infeasible as our dataset gets large, or we want to make any updates to it. A more robust solution would be to connect our web app directly to a database, enabling us to decouple the app and the data at will, and freely make revisions to either in tandem.
 
 # Introducing docker-compose
 
@@ -124,7 +124,7 @@ With our database aligned, we can add our existing streamlit app to the `docker-
 
 All the action commences with `context: .`, which indicates to Docker that the building of our `streamlit` image should be governed by a `Dockerfile` residing in the same directory as the `docker-compose.yml`. Other than that, we open up streamlit's default `8501` port, just as we did in [part 1](https://collinprather.github.io/blog//docker/aws/2020/03/10/streamlit-docker-pt1.html).
 
-Most commonly, you will already have a Postgres instance storing your data. Since our app uses data retrieved via api, there is one extra step we must take to get this data into the database. This can be handled by making use of a script that retrieves the data, then loads it into the database each time the app's image is built. To do so, we must add the following line to our `Dockerfile`.
+Most commonly, you will already have a Postgres instance storing your data. Since our app uses data retrieved via api, there is one extra step we must take to get this data into the database. This can be handled by making use of a script that retrieves the data, then loads it into the database each time the app's image is built. To do so, we must add the following line to our `Dockerfile`. (see full `Dockerfile` [here](https://github.com/collinprather/streamlit-docker/blob/docker-compose%2Bpostgres/Dockerfile))
 
 ```shell
 CMD python3 scripts/load_docker_db.py

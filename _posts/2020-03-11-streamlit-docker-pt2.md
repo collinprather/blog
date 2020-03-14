@@ -13,7 +13,7 @@ This is part 2 of a 3-part series. Make sure to read through [part 1](https://co
 
 # Deploying your web app to the cloud with [AWS](https://aws.amazon.com/console/)
 
-Now, we will walk through how to deploy your web app to the cloud and make it publicly available! Just like in [part 1](https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html), these instructions are tailored to [my small example](https://github.com/collinprather/streamlit-docker), but should generalize to any streamlit app you've built.
+Now, we will walk through how to deploy your web app to the cloud and make it publicly available! Just like in [part 1](https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html), these instructions are tailored to [my small example](https://github.com/collinprather/streamlit-docker), but should work for any streamlit app you've built.
 
 ## EC2 set-up
 
@@ -25,7 +25,7 @@ Next, you'll want to use the tab on the left hand-side of the console to select 
 
 ![](../../../../../images/2020-03-11-streamlit-docker-pt2/launch.png)
 
-This will lead you to a screen prompting you to "Choose you an Amazon Machine Image". There are many options to choose from here, but our life will be made simplest by choosing the `Deep Learning AMI (Ubuntu)` AMI. Using this image does introduce a bit of unneccessary overhead, however, it gurantees us that git and Docker will be pre-installed, so it will be our choice.
+This will lead you to a screen prompting you to "Choose you an Amazon Machine Image". There are many options to choose from here, but our life will be made simplest by choosing the `Deep Learning AMI (Ubuntu)` AMI. Using this image does introduce a bit of extra overhead, however, it gurantees us that git and Docker will be pre-installed, so it will be our choice.
 
 ![](../../../../../images/2020-03-11-streamlit-docker-pt2/ami.png)
 
@@ -65,7 +65,7 @@ ubuntu@ip-172-31-10-244:~/streamlit-docker$ docker image build -t streamlit:app 
 ubuntu@ip-172-31-10-244:~/streamlit-docker$ docker container run -p 8501:8501 -d streamlit:app
 ```
 
-Now, the web app will be served at `<EC2 public IP address>:8501`! The public IP address can be found under "IPv4 Public IP" in the AWS console. Once you've located it, pull open a web browser and verify that your app is running as expected!
+Now, the web app will be served at `http://<EC2 public IP address>:8501`! The public IP address can be found under "IPv4 Public IP" in the AWS console. Once you've located it, pull open a web browser and verify that your app is running as expected!
 
 {% include alert.html text="When you're done, don't forget to terminate your instance!" %}
 

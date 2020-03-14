@@ -142,7 +142,7 @@ window.onload = wrap_img;
 <a class="anchor" href="#deploying-your-web-app-to-the-cloud-with-aws" aria-hidden="true"><span class="octicon octicon-link"></span></a>Deploying your web app to the cloud with <a href="https://aws.amazon.com/console/">AWS</a>
 </h1>
 
-<p>Now, we will walk through how to deploy your web app to the cloud and make it publicly available! Just like in <a href="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html">part 1</a>, these instructions are tailored to <a href="https://github.com/collinprather/streamlit-docker">my small example</a>, but should generalize to any streamlit app you’ve built.</p>
+<p>Now, we will walk through how to deploy your web app to the cloud and make it publicly available! Just like in <a href="https://collinprather.github.io/blog/docker/aws/2020/03/10/streamlit-docker-pt1.html">part 1</a>, these instructions are tailored to <a href="https://github.com/collinprather/streamlit-docker">my small example</a>, but should work for any streamlit app you’ve built.</p>
 
 <h2 id="ec2-set-up">
 <a class="anchor" href="#ec2-set-up" aria-hidden="true"><span class="octicon octicon-link"></span></a>EC2 set-up</h2>
@@ -155,7 +155,7 @@ window.onload = wrap_img;
 
 <p><img src="../../../../../images/2020-03-11-streamlit-docker-pt2/launch.png" alt=""></p>
 
-<p>This will lead you to a screen prompting you to “Choose you an Amazon Machine Image”. There are many options to choose from here, but our life will be made simplest by choosing the <code class="highlighter-rouge">Deep Learning AMI (Ubuntu)</code> AMI. Using this image does introduce a bit of unneccessary overhead, however, it gurantees us that git and Docker will be pre-installed, so it will be our choice.</p>
+<p>This will lead you to a screen prompting you to “Choose you an Amazon Machine Image”. There are many options to choose from here, but our life will be made simplest by choosing the <code class="highlighter-rouge">Deep Learning AMI (Ubuntu)</code> AMI. Using this image does introduce a bit of extra overhead, however, it gurantees us that git and Docker will be pre-installed, so it will be our choice.</p>
 
 <p><img src="../../../../../images/2020-03-11-streamlit-docker-pt2/ami.png" alt=""></p>
 
@@ -164,7 +164,7 @@ window.onload = wrap_img;
 <p><img src="../../../../../images/2020-03-11-streamlit-docker-pt2/t2medium.png" alt=""></p>
 
 <div class="Toast Toast--warning googoo">
-   <span class="Toast-icon"><svg class="octicon octicon-alert octicon octicon-alert" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>
+   <span class="Toast-icon"><svg class="octicon octicon-alert" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>
    <span class="Toast-content">Your AWS account will be charged when you launch this instance. The good news is that you'll only be charged about $0.0464 per hour (as of 3/11/20). Don't forget to terminate your instance when finished!</span>
 </div>
 
@@ -197,10 +197,10 @@ ubuntu@ip-172-31-10-244:~/streamlit-docker<span class="nv">$ </span>docker image
 ubuntu@ip-172-31-10-244:~/streamlit-docker<span class="nv">$ </span>docker container run <span class="nt">-p</span> 8501:8501 <span class="nt">-d</span> streamlit:app
 </code></pre></div></div>
 
-<p>Now, the web app will be served at <code class="highlighter-rouge">&lt;EC2 public IP address&gt;:8501</code>! The public IP address can be found under “IPv4 Public IP” in the AWS console. Once you’ve located it, pull open a web browser and verify that your app is running as expected!</p>
+<p>Now, the web app will be served at <code class="highlighter-rouge">http://&lt;EC2 public IP address&gt;:8501</code>! The public IP address can be found under “IPv4 Public IP” in the AWS console. Once you’ve located it, pull open a web browser and verify that your app is running as expected!</p>
 
 <div class="Toast Toast--warning googoo">
-   <span class="Toast-icon"><svg class="octicon octicon-alert octicon octicon-alert octicon octicon-alert" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>
+   <span class="Toast-icon"><svg class="octicon octicon-alert octicon octicon-alert" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 000 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 00.01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>
    <span class="Toast-content">When you're done, don't forget to terminate your instance!</span>
 </div>
 
