@@ -25,7 +25,7 @@ Next, you'll want to use the tab on the left hand-side of the console to select 
 
 ![](../../../../../images/2020-03-11-streamlit-docker-pt2/launch.png)
 
-This will lead you to a screen prompting you to "Choose you an Amazon Machine Image". There are many options to choose from here, but our life will be made simplest by choosing the `Deep Learning AMI (Ubuntu)` AMI. Using this image does introduce a bit of extra overhead, however, it gurantees us that git and Docker will be pre-installed, so it will be our choice.
+This will lead you to a screen prompting you to "Choose an Amazon Machine Image". There are many options to choose from here, but our life will be made simplest by choosing the `Deep Learning AMI (Ubuntu)` AMI. Using this image does introduce a bit of extra overhead, however, it gurantees us that git and Docker will be pre-installed, so it will be our choice.
 
 ![](../../../../../images/2020-03-11-streamlit-docker-pt2/ami.png)
 

@@ -19,7 +19,7 @@ but if you'd rather jump right in, you can go ahead and `git clone` my small exa
  * You have Docker installed
  * You have a working knowledge of the command line
 
-Streamlit is the framework featured in this post as it is designed for data scientists and machine learning engineers to quickly elevate their analysis from their laptops to deployment. Building useful, aesthetically-pleasing web applications is a diffult thing to do and Streamlit has taken great strides in enabling analysts with little web development experience to "create beautiful data apps in hours, not weeks."
+Streamlit is the framework featured in this post as it is designed for data scientists and machine learning engineers to quickly elevate their analysis from their laptops to deployment. Building useful, aesthetically-pleasing web applications is a difficult thing to do and Streamlit has taken great strides in enabling analysts with little web development experience to "create beautiful data apps in hours, not weeks." Additionally, Docker is a great tool for maintaining reproducible work and portability of your compute environment — two essential skills for professional data scientists. If you’re looking to read more on this topic, Hamel Husain’s [article](https://towardsdatascience.com/how-docker-can-help-you-become-a-more-effective-data-scientist-7fc048ef91d5) provides a compelling explanation for why the use of Docker fosters more effective data scientists.
 
 # Containerizing a [Streamlit](https://www.streamlit.io/) web app with [Docker](https://www.docker.com/)
  
