@@ -95,7 +95,7 @@
   
       ,"page2": {
           "title": "Featured Projects",
-          "content": "Anomaly Detection with AWS Inference Pipeline . . DrivenData Turbidity Competition . . Grand Rapids Car Crash Analysis . .",
+          "content": "Sparkle: A Multi-Platform System for Combating Medication Non-adherence with Machine Learning . . Our paper, “​A Machine Learning Approach to Detecting Low Medication State with Wearable Technologies” was accepted for presentation at the IEEE Engineering in Medicine and Biology Society Conference 2020, in Montréal, Québec, Canada. . Anomaly Detection with AWS Inference Pipeline . . DrivenData Turbidity Competition . . Grand Rapids Car Crash Analysis . .",
           "url": "https://collinprather.github.io/blog/featured/",
           "relUrl": "/featured/",
           "date": ""
