@@ -4,6 +4,10 @@ layout: page
 permalink: /featured/
 ---
 
+# [_Sparkle_: A Multi-Platform System for Combating Medication Non-adherence with Machine Learning](https://github.com/msarmi9/sparkle)
+[![anomaly](../images/featured/sensor_pivot.png)](https://github.com/msarmi9/sparkle)
+
+Our paper, _“​A Machine Learning Approach to Detecting Low Medication State with Wearable Technologies”_ was accepted for presentation at the [IEEE Engineering in Medicine and Biology Society Conference 2020](https://embc.embs.org/2020/), in Montréal, Québec, Canada.
 
 # [Anomaly Detection with AWS Inference Pipeline](https://github.com/collinprather/anomaly-detection-aws-ip)
 [![anomaly](../images/featured/anomaly_graph.png)](https://github.com/collinprather/anomaly-detection-aws-ip)
