@@ -106,7 +106,7 @@
   
       ,"page2": {
           "title": "Featured Projects",
-          "content": "Sparkle: A Multi-Platform System for Combating Medication Non-adherence with Machine Learning . . Our paper, “​A Machine Learning Approach to Detecting Low Medication State with Wearable Technologies” was accepted for presentation at the IEEE Engineering in Medicine and Biology Society Conference 2020, in Montréal, Québec, Canada. . . Anomaly Detection with AWS Inference Pipeline . . . DrivenData Turbidity Competition . . . Grand Rapids Car Crash Analysis . .",
+          "content": "Deep, Recurrent Survival Analysis in PyTorch . . An adapted PyTorch implementation (see docs for details) of a Deep Recurrent Survival Analysis model. The image above, and network architecture come directly from the original paper. . . Sparkle: A Multi-Platform System for Combating Medication Non-adherence with Machine Learning . . Our paper, “​A Machine Learning Approach to Detecting Low Medication State with Wearable Technologies” was accepted for presentation at the IEEE Engineering in Medicine and Biology Society Conference 2020, in Montréal, Québec, Canada. . . Anomaly Detection with AWS Inference Pipeline . . . DrivenData Turbidity Competition . . . Grand Rapids Car Crash Analysis . .",
           "url": "https://collinprather.github.io/blog/featured/",
           "relUrl": "/featured/",
           "date": ""
