@@ -4,6 +4,13 @@ layout: page
 permalink: /featured/
 ---
 
+# [Deep, Recurrent Survival Analysis in PyTorch](https://github.com/collinprather/drsa)
+[![anomaly](../images/featured/drsa.png)](https://github.com/collinprather/drsa)
+
+An adapted PyTorch implementation (see [docs](https://collinprather.github.io/drsa/) for details) of a Deep Recurrent Survival Analysis model. The image above, and network architecture come directly from the [original paper](https://arxiv.org/pdf/1809.02403.pdf). 
+
+---
+
 # [_Sparkle_: A Multi-Platform System for Combating Medication Non-adherence with Machine Learning](https://github.com/msarmi9/sparkle)
 [![anomaly](../images/featured/sensor_pivot.png)](https://github.com/msarmi9/sparkle)
 
